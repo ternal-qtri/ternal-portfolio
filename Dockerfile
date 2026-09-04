@@ -49,21 +49,24 @@ USER spring:spring
 # Khai báo cổng dịch vụ của ứng dụng
 EXPOSE 8080
 
-# Cấu hình tối ưu hóa JVM trong môi trường container:
+# Cấu hình tối ưu hóa JVM trong môi trường container (đặc biệt cho Render Free 512MB RAM):
 # - UseContainerSupport: Nhận diện chính xác giới hạn CPU & RAM từ Docker cgroups
-# - MaxRAMPercentage=75.0: Giới hạn heap size tối đa 75% RAM được cấp phát cho container
-# - InitialRAMPercentage=50.0: Cấp phát trước 50% RAM để tối ưu tốc độ khởi động
+# - Xms128m / Xmx256m: Khống chế bộ nhớ Heap tối đa 256MB để tránh bị Render OOM Killer (Exit code 137)
+# - Xss512k: Tối ưu kích thước stack mỗi thread, tiết kiệm bộ nhớ khi có nhiều luồng
+# - MaxMetaspaceSize=128m: Giới hạn bộ nhớ Metaspace
 # - java.security.egd: Sử dụng nguồn sinh số ngẫu nhiên non-blocking urandom
 ENV JAVA_OPTS="-XX:+UseContainerSupport \
-               -XX:MaxRAMPercentage=75.0 \
-               -XX:InitialRAMPercentage=50.0 \
+               -Xms128m \
+               -Xmx256m \
+               -Xss512k \
+               -XX:MaxMetaspaceSize=128m \
                -Djava.security.egd=file:/dev/./urandom \
                -Duser.timezone=Asia/Ho_Chi_Minh \
                -Dfile.encoding=UTF-8"
 
-# Kiểm tra tình trạng hoạt động của ứng dụng (Healthcheck)
+# Kiểm tra tình trạng hoạt động của ứng dụng (Healthcheck hỗ trợ cổng động PORT từ Render)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/ || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/ || exit 1
 
 # Lệnh khởi động Spring Boot
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
