@@ -1,32 +1,92 @@
 package com.ternal.ternalportfolio.service;
 
-import jakarta.mail.internet.MimeMessage;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.HtmlUtils;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    @Value("${spring.mail.username:ternal.qtri@gmail.com}")
+    private final HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(10))
+            .build();
+
+    @Value("${resend.api.key:${RESEND_API_KEY:}}")
+    private String resendApiKey;
+
+    @Value("${resend.from.email:${RESEND_FROM_EMAIL:Nguyễn Quốc Trí <onboarding@resend.dev>}}")
     private String fromEmail;
+
+    @Value("${resend.reply-to.email:${EMAIL_USERNAME:ternal.qtri@gmail.com}}")
+    private String defaultReplyToEmail;
 
     @Value("${admin.notification.email:ternal.qtri@gmail.com}")
     private String adminEmail;
+
+    /**
+     * Gửi email thông qua Resend REST API (HTTPS Cổng 443 - không bao giờ bị chặn trên Cloud / Render)
+     */
+    private void sendEmailViaResend(String to, String replyTo, String subject, String plainText, String htmlContent, Map<String, String> customHeaders) {
+        if (resendApiKey == null || resendApiKey.trim().isEmpty()) {
+            log.error("Chưa cấu hình RESEND_API_KEY. Không thể gửi email đến {}", to);
+            return;
+        }
+
+        try {
+            Map<String, Object> payload = new HashMap<>();
+            payload.put("from", fromEmail);
+            payload.put("to", List.of(to));
+            payload.put("subject", subject);
+            payload.put("text", plainText);
+            payload.put("html", htmlContent);
+            if (replyTo != null && !replyTo.isBlank()) {
+                payload.put("reply_to", replyTo);
+            }
+            if (customHeaders != null && !customHeaders.isEmpty()) {
+                payload.put("headers", customHeaders);
+            }
+
+            String jsonPayload = objectMapper.writeValueAsString(payload);
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://api.resend.com/emails"))
+                    .header("Authorization", "Bearer " + resendApiKey.trim())
+                    .header("Content-Type", "application/json; charset=UTF-8")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+                    .timeout(Duration.ofSeconds(15))
+                    .build();
+
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                log.info("Email đã được gửi thành công qua Resend API đến: {}. Phản hồi: {}", to, response.body());
+            } else {
+                log.error("Resend API trả về lỗi khi gửi đến {} (HTTP {}): {}", to, response.statusCode(), response.body());
+            }
+        } catch (Exception e) {
+            log.error("Ngoại lệ khi gọi Resend API gửi thư đến {}: {}", to, e.getMessage(), e);
+        }
+    }
 
     @Async
     public void sendContactSuccessEmail(String name, String toEmail, String subject, String message) {
@@ -61,25 +121,21 @@ public class EmailService {
                     + "Backend Developer • Java / Spring Boot\n"
                     + "Website: https://ternal-nguyenquoctri.io.vn";
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+            Map<String, String> headers = Map.of(
+                    "Auto-Submitted", "auto-replied",
+                    "X-Auto-Response-Suppress", "All"
+            );
 
-            helper.setFrom(fromEmail, "Nguyễn Quốc Trí");
-            helper.setTo(toEmail);
-            helper.setReplyTo(fromEmail, "Nguyễn Quốc Trí");
-            helper.setSubject("Nguyễn Quốc Trí: Xác nhận đã nhận được tin nhắn từ bạn");
-            
-            // Gửi cả bản text thuần và bản HTML chuẩn MIME multipart/alternative
-            helper.setText(plainText, htmlContent);
-
-            // Bổ sung header xác nhận phản hồi tự động chuẩn RFC 3834
-            mimeMessage.addHeader("Auto-Submitted", "auto-replied");
-            mimeMessage.addHeader("X-Auto-Response-Suppress", "All");
-
-            mailSender.send(mimeMessage);
-            log.info("Email xác nhận liên hệ đã được gửi thành công đến khách hàng: {}", toEmail);
+            sendEmailViaResend(
+                    toEmail,
+                    defaultReplyToEmail,
+                    "Nguyễn Quốc Trí: Xác nhận đã nhận được tin nhắn từ bạn",
+                    plainText,
+                    htmlContent,
+                    headers
+            );
         } catch (Exception e) {
-            log.error("Không thể gửi email xác nhận đến khách hàng {}: {}", toEmail, e.getMessage(), e);
+            log.error("Không thể xử lý dữ liệu gửi email xác nhận đến khách hàng {}: {}", toEmail, e.getMessage(), e);
         }
     }
 
@@ -110,21 +166,22 @@ public class EmailService {
                     + "- Nội dung:\n" + message.trim() + "\n\n"
                     + "Xem chi tiết tại: https://ternal-nguyenquoctri.io.vn/admin/contacts";
 
-            MimeMessage mimeMessage = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, StandardCharsets.UTF_8.name());
+            Map<String, String> headers = Map.of(
+                    "X-Auto-Response-Suppress", "All"
+            );
 
-            helper.setFrom(fromEmail, "Portfolio Notification");
-            helper.setTo(adminEmail);
-            helper.setReplyTo(senderEmail, name);
-            helper.setSubject("[Liên hệ mới] " + name + ": " + displaySubject);
-            helper.setText(plainText, htmlContent);
+            String replyTo = (senderEmail != null && !senderEmail.isBlank()) ? senderEmail : defaultReplyToEmail;
 
-            mimeMessage.addHeader("X-Auto-Response-Suppress", "All");
-
-            mailSender.send(mimeMessage);
-            log.info("Email thông báo liên hệ mới đã được gửi thành công đến Admin: {}", adminEmail);
+            sendEmailViaResend(
+                    adminEmail,
+                    replyTo,
+                    "[Liên hệ mới] " + name + ": " + displaySubject,
+                    plainText,
+                    htmlContent,
+                    headers
+            );
         } catch (Exception e) {
-            log.error("Không thể gửi email thông báo liên hệ mới đến Admin ({}): {}", adminEmail, e.getMessage(), e);
+            log.error("Không thể xử lý dữ liệu gửi email thông báo liên hệ mới đến Admin ({}): {}", adminEmail, e.getMessage(), e);
         }
     }
 }
