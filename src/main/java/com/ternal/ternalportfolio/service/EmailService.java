@@ -34,7 +34,7 @@ public class EmailService {
     @Value("${resend.api.key:${RESEND_API_KEY:}}")
     private String resendApiKey;
 
-    @Value("${resend.from.email:${RESEND_FROM_EMAIL:Nguyễn Quốc Trí <onboarding@resend.dev>}}")
+    @Value("${resend.from.email:${RESEND_FROM_EMAIL:Nguyen Quoc Tri <onboarding@resend.dev>}}")
     private String fromEmail;
 
     @Value("${resend.reply-to.email:${EMAIL_USERNAME:ternal.qtri@gmail.com}}")
