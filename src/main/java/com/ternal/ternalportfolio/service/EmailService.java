@@ -80,6 +80,8 @@ public class EmailService {
 
             if (response.statusCode() >= 200 && response.statusCode() < 300) {
                 log.info("Email đã được gửi thành công qua Resend API đến: {}. Phản hồi: {}", to, response.body());
+            } else if (response.statusCode() == 403 && response.body() != null && response.body().contains("only send testing emails to your own email address")) {
+                log.error("Resend 403 Forbidden: Tài khoản đang ở chế độ Sandbox (dùng sender onboarding@resend.dev) nên Resend CHỈ CHO PHÉP gửi tới chính email đăng ký tài khoản Resend. Để gửi tới {}, bạn cần verify domain tại https://resend.com/domains. Chi tiết lỗi từ Resend: {}", to, response.body());
             } else {
                 log.error("Resend API trả về lỗi khi gửi đến {} (HTTP {}): {}", to, response.statusCode(), response.body());
             }
