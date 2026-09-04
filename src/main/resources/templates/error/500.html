@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layouts/layout}">
+<head>
+    <title>500 — Lỗi Máy Chủ Nội Bộ | Ternal Portfolio</title>
+</head>
+<body>
+
+    <div layout:fragment="content" data-page-title="500 — Lỗi Máy Chủ Nội Bộ | Ternal Portfolio"
+         class="flex-grow flex items-center justify-center pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
+
+        <div class="w-full max-w-2xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-8 reveal-on-scroll">
+
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <span class="font-mono text-xs text-rose-400 bg-rose-950/40 border border-rose-800/80 px-3 py-1 rounded-lg">
+                    // HTTP_STATUS: 500_INTERNAL_SERVER_ERROR
+                </span>
+                <span class="font-mono text-xs text-zinc-500">
+                    CORE_ENGINE
+                </span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-baseline gap-3">
+                    <span class="font-mono text-6xl sm:text-7xl font-extrabold text-white tracking-tighter">500</span>
+                    <span class="font-mono text-xs text-zinc-500 uppercase">// SYSTEM_EXCEPTION</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Hệ thống gặp sự cố xử lý
+                </h1>
+                <p class="text-sm text-zinc-400 leading-relaxed font-sans">
+                    Máy chủ đã gặp lỗi ngoài dự kiến trong quá trình xử lý yêu cầu. Sự cố đã được ghi lại tự động vào nhật ký hệ thống để kiểm tra và khắc phục.
+                </p>
+            </div>
+
+            <!-- Technical Telemetry Box -->
+            <div class="bg-[#09090B] border border-zinc-800/80 rounded-xl p-4 font-mono text-xs space-y-2">
+                <div class="flex justify-between text-zinc-500">
+                    <span>SEVERITY:</span>
+                    <span class="text-rose-400 font-bold">HIGH (RUNTIME_UNHANDLED)</span>
+                </div>
+                <div class="flex justify-between text-zinc-500">
+                    <span>DIAGNOSIS:</span>
+                    <span class="text-zinc-300">SERVER_SIDE_FAILURE</span>
+                </div>
+                <div class="flex justify-between text-zinc-500">
+                    <span>ACTION:</span>
+                    <span class="text-emerald-400">LOGGED_TO_LOGBACK_CONSOLE</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <button type="button" onclick="location.reload()"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm bg-white text-black hover:bg-zinc-200 transition-all duration-200 active:scale-95 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <span>Tải lại trang</span>
+                </button>
+                <a th:href="@{/}" href="/"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-sm text-zinc-200 bg-[#121214] hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-500 transition-all duration-200 active:scale-95">
+                    <span>← Về Trang Chủ</span>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

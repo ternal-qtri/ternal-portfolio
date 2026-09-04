@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Nhập Quản Trị | Ternal.dev Control Panel</title>
+    <meta name="description"
+        content="Trang đăng nhập hệ thống quản trị danh mục kỹ năng, dự án và tin nhắn liên hệ của Ternal.dev.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            black: '#000000',
+                            canvas: '#09090B',
+                            surface: '#121214',
+                            sub: '#18181B',
+                            border: '#27272A',
+                            borderHover: '#52525B',
+                            accent: '#10B981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #09090B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525B;
+        }
+
+        .bg-tech-grid {
+            background-size: 32px 32px;
+            background-image:
+                linear-gradient(to right, #18181B 1px, transparent 1px),
+                linear-gradient(to bottom, #18181B 1px, transparent 1px);
+        }
+    </style>
+</head>
+
+<body
+    class="bg-[#09090B] text-zinc-100 font-sans antialiased selection:bg-white selection:text-black min-h-screen flex flex-col items-center justify-center p-4 sm:p-6 relative overflow-x-hidden">
+
+    <!-- Background Technical Grid -->
+    <div class="fixed inset-0 bg-tech-grid opacity-50 pointer-events-none -z-10"></div>
+
+    <!-- Back to client home link -->
+    <div class="w-full max-w-md mb-4 flex justify-between items-center">
+        <a th:href="@{/}" href="/"
+            class="inline-flex items-center gap-2 text-xs font-mono text-zinc-400 hover:text-white transition-colors group">
+            <span class="group-hover:-translate-x-1 transition-transform">←</span>
+            <span>Về trang chủ</span>
+        </a>
+
+        <span
+            class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>AUTH SERVICE v1.0</span>
+        </span>
+    </div>
+
+    <main
+        class="w-full max-w-md bg-[#121214] border border-zinc-800 hover:border-zinc-700 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-6 transition-all">
+
+        <div class="text-center space-y-3">
+            <div
+                class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white text-black font-extrabold font-mono text-xl shadow-md mx-auto">
+                T
+            </div>
+
+            <div class="space-y-1">
+                <h1 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                    Quản trị portfolio
+                </h1>
+                <p class="text-xs text-zinc-400 font-sans leading-relaxed">
+                    Đăng nhập vào bảng điều khiển quản trị hệ thống
+                </p>
+            </div>
+        </div>
+
+        <div class="space-y-3">
+            <a th:href="@{/oauth2/authorization/google}" href="/oauth2/authorization/google"
+                class="w-full inline-flex items-center justify-center gap-3 px-4 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-600 text-xs font-semibold text-zinc-200 transition-colors shadow-sm active:scale-95">
+                <img src="https://files.svgcdn.io/devicon/google.svg" alt="Google Logo" class="w-4 h-4 object-contain">
+                <span>Đăng nhập bằng Google</span>
+            </a>
+
+            <div class="relative flex items-center justify-center my-4">
+                <span class="bg-[#121214] px-3 font-mono text-[10px] text-zinc-500 uppercase tracking-wider relative">
+                    HOẶC TÀI KHOẢN HỆ THỐNG
+                </span>
+            </div>
+        </div>
+
+        <div th:if="${param.error}" class="p-3 rounded-lg bg-red-950/60 border border-red-800 text-xs text-red-300 font-sans">
+            <span th:if="${param.error[0] == 'oauth2'}">Tài khoản Google không có quyền truy cập quản trị.</span>
+            <span th:unless="${param.error[0] == 'oauth2'}">Tên đăng nhập hoặc mật khẩu không chính xác.</span>
+        </div>
+
+        <div th:if="${param.logout}" class="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 font-sans">
+            Đã đăng xuất thành công.
+        </div>
+
+        <form th:action="@{/admin/login}" method="POST" class="space-y-4">
+
+            <div class="space-y-1.5">
+                <label for="username" class="block text-xs font-mono font-medium text-zinc-300">
+                    EMAIL HOẶC TÊN ĐĂNG NHẬP
+                </label>
+                <div class="relative">
+                    <input type="text" id="username" name="username" required
+                        class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-sans focus:outline-none focus:border-white transition-colors">
+                </div>
+            </div>
+
+            <div class="space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <label for="password" class="block text-xs font-mono font-medium text-zinc-300">
+                        MẬT KHẨU
+                    </label>
+                </div>
+
+                <div class="relative">
+                    <input type="password" id="password" name="password" required placeholder="•••••••"
+                        class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-sans focus:outline-none focus:border-white transition-colors pr-10">
+                    <button type="button" id="toggle-password" aria-label="Ẩn / hiện mật khẩu"
+                        class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors focus:outline-none">
+                        <svg id="eye-icon" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+                <input type="checkbox" id="remember-me" name="remember-me" checked
+                    class="w-4 h-4 rounded bg-[#09090B] border border-zinc-800 text-white focus:ring-0 focus:ring-offset-0 accent-white cursor-pointer">
+                <label for="remember-me" class="text-xs text-zinc-400 cursor-pointer select-none font-sans">
+                    Ghi nhớ phiên đăng nhập (30 ngày)
+                </label>
+            </div>
+
+            <div class="pt-2">
+                <button type="submit"
+                    class="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95 shadow-sm">
+                    <span>Đăng nhập</span>
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </button>
+            </div>
+
+        </form>
+
+        <div class="pt-4 border-t border-zinc-800/80 text-center space-y-2">
+            <div class="flex items-center justify-center gap-2 text-[11px] font-mono text-zinc-500">
+                <svg class="w-3.5 h-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                <span>SPRING SECURITY & JWT PROTECTED</span>
+            </div>
+            <p class="text-[10px] text-zinc-600 font-mono">
+                © 2026 Ternal.dev Admin Console • All rights reserved
+            </p>
+        </div>
+
+    </main>
+
+    <script>
+        const toggleBtn = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('password');
+
+        if (toggleBtn && passwordInput) {
+            toggleBtn.addEventListener('click', () => {
+                const isPassword = passwordInput.getAttribute('type') === 'password';
+                passwordInput.setAttribute('type', isPassword ? 'text' : 'password');
+            });
+        }
+    </script>
+
+</body>
+
+</html>

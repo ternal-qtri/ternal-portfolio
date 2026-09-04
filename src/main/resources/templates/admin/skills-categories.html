@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/layout}">
+<head>
+    <title>Quản Lý Loại Kỹ Năng | Ternal.dev Admin</title>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <!-- Top Action Bar & Header -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+            <div>
+                <div
+                    class="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 mb-2">
+                    <span>// DATABASE ENTITY: SKILL_CATEGORY</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Quản lý loại kỹ năng
+                </h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1 font-sans">
+                    Quản lý danh sách các nhóm chuyên môn và cấu hình thứ tự hiển thị trên trang Client.
+                </p>
+            </div>
+
+            <!-- Nút "Thêm mới" -->
+            <button type="button" id="btn-open-add-modal"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95 shadow-sm self-start sm:self-auto">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Thêm loại kỹ năng</span>
+            </button>
+        </section>
+
+        <!-- Flash Messages Alert -->
+        <div th:if="${successMessage}" class="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-white">✕</button>
+        </div>
+        <div th:if="${errorMessage}" class="p-3.5 rounded-xl bg-red-950/60 border border-red-800 text-xs text-red-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-white">✕</button>
+        </div>
+
+        <!-- Bảng danh sách loại kỹ năng -->
+        <section class="bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead
+                        class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 font-mono uppercase text-[11px]">
+                        <tr>
+                            <th scope="col" class="py-3.5 px-4 w-16 text-center">STT</th>
+                            <th scope="col" class="py-3.5 px-4 w-64">Tên loại</th>
+                            <th scope="col" class="py-3.5 px-4 min-w-[280px]">Mô tả</th>
+                            <th scope="col" class="py-3.5 px-4 w-28 text-center">Thứ tự</th>
+                            <th scope="col" class="py-3.5 px-4 w-36 text-center">Hành động</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-zinc-800/80 font-sans text-zinc-300">
+                        <tr th:each="cat, iterStat : ${categories.content}" class="hover:bg-zinc-900/50 transition-colors">
+                            <td class="py-3.5 px-4 text-center font-mono text-zinc-500 font-semibold"
+                                th:text="${categories.number * categories.size + iterStat.count}">01</td>
+                            <td class="py-3.5 px-4">
+                                <span class="font-bold text-white" th:text="${cat.name}">Hệ sinh thái Backend & Frameworks</span>
+                            </td>
+                            <td class="py-3.5 px-4 text-zinc-400 text-xs"
+                                th:text="${cat.description != null && !cat.description.isEmpty() ? cat.description : '—'}">
+                                Mô tả
+                            </td>
+                            <td class="py-3.5 px-4 text-center font-mono">
+                                <span class="px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-white font-bold"
+                                      th:text="${cat.orderIndex}">1</span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center space-x-1 font-mono">
+                                <button type="button"
+                                    class="btn-edit px-2.5 py-1 rounded text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                                    th:data-id="${cat.id}"
+                                    th:data-name="${cat.name}"
+                                    th:data-desc="${cat.description}"
+                                    th:data-order="${cat.orderIndex}">
+                                    Sửa
+                                </button>
+                                <form th:action="@{/admin/skills-categories/delete/{id}(id=${cat.id})}" method="POST" class="inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa loại kỹ năng này không?');">
+                                    <button type="submit"
+                                        class="px-2.5 py-1 rounded text-zinc-400 hover:text-white bg-zinc-900 hover:bg-red-950/60 border border-zinc-800 hover:border-red-800 transition-colors">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${categories.empty}">
+                            <td colspan="5" class="py-8 text-center text-zinc-500 font-mono text-xs">
+                                Chưa có loại kỹ năng nào được tạo.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang (Pagination) -->
+            <div class="px-4 py-3 bg-zinc-900/50 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
+                <div>
+                    HIỂN THỊ <span class="text-white font-bold" th:text="${categories.numberOfElements}">0</span> / 
+                    <span class="text-white font-bold" th:text="${categories.totalElements}">0</span> DANH MỤC
+                    (TRANG <span class="text-white font-bold" th:text="${categories.totalPages > 0 ? categories.number + 1 : 1}">1</span> / <span th:text="${categories.totalPages > 0 ? categories.totalPages : 1}">1</span>)
+                </div>
+                <div th:if="${categories.totalPages > 1}" class="flex items-center gap-1">
+                    <a th:href="@{/admin/skills-categories(page=${categories.number - 1})}"
+                       th:classappend="${categories.first} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        ← Trước
+                    </a>
+                    <th:block th:each="i : ${#numbers.sequence(0, categories.totalPages - 1)}">
+                        <a th:href="@{/admin/skills-categories(page=${i})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == categories.number} ? 'bg-white text-black font-bold' : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'"
+                           class="px-3 py-1.5 rounded-lg transition-colors">
+                            1
+                        </a>
+                    </th:block>
+                    <a th:href="@{/admin/skills-categories(page=${categories.number + 1})}"
+                       th:classappend="${categories.last} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        Sau →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Category Modal -->
+        <div id="category-modal"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div
+                class="w-full max-w-lg bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <div class="space-y-1">
+                        <h2 id="modal-title" class="text-lg font-bold text-white tracking-tight">
+                            Thêm loại kỹ năng mới
+                        </h2>
+                        <p class="text-xs text-zinc-400 font-sans">
+                            Cấu hình thông tin danh mục kỹ năng để phân loại chuyên môn
+                        </p>
+                    </div>
+                    <button type="button" id="btn-close-modal"
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <form id="category-form" th:action="@{/admin/skills-categories/save}" method="POST" class="space-y-4">
+
+                    <input type="hidden" id="category-id" name="id">
+
+                    <div class="space-y-1.5">
+                        <label for="category-name" class="block text-xs font-mono font-medium text-zinc-300">
+                            TÊN LOẠI KỸ NĂNG <span class="text-white font-bold">*</span>
+                        </label>
+                        <input type="text" id="category-name" name="name" required
+                            placeholder="vd: Hệ sinh thái Backend & Frameworks"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-sans focus:outline-none focus:border-white transition-colors">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="category-desc" class="block text-xs font-mono font-medium text-zinc-300">
+                            MÔ TẢ NGẮN
+                        </label>
+                        <textarea id="category-desc" name="description" rows="3"
+                            placeholder="Mô tả phạm vi hoặc các công nghệ thuộc danh mục này..."
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-sans focus:outline-none focus:border-white transition-colors resize-y"></textarea>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="category-order" class="block text-xs font-mono font-medium text-zinc-300">
+                            THỨ TỰ HIỂN THỊ (SỐ) <span class="text-white font-bold">*</span>
+                        </label>
+                        <input type="number" id="category-order" name="orderIndex" required min="0" value="0"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-mono focus:outline-none focus:border-white transition-colors">
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-end gap-3 border-t border-zinc-800">
+                        <button type="button" id="btn-cancel-modal"
+                            class="px-4 py-2 rounded-lg text-xs font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors">
+                            Hủy bỏ
+                        </button>
+                        <button type="submit"
+                            class="px-5 py-2 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+                            Lưu loại kỹ năng
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            const modal = document.getElementById('category-modal');
+            const btnOpenAdd = document.getElementById('btn-open-add-modal');
+            const btnClose = document.getElementById('btn-close-modal');
+            const btnCancel = document.getElementById('btn-cancel-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const categoryId = document.getElementById('category-id');
+            const categoryName = document.getElementById('category-name');
+            const categoryDesc = document.getElementById('category-desc');
+            const categoryOrder = document.getElementById('category-order');
+
+            function openModal(isEdit = false, data = {}) {
+                if (isEdit) {
+                    modalTitle.textContent = 'Cập nhật loại kỹ năng';
+                    categoryId.value = data.id || '';
+                    categoryName.value = data.name || '';
+                    categoryDesc.value = data.desc || '';
+                    categoryOrder.value = data.order || '0';
+                } else {
+                    modalTitle.textContent = 'Thêm loại kỹ năng mới';
+                    categoryId.value = '';
+                    categoryName.value = '';
+                    categoryDesc.value = '';
+                    categoryOrder.value = '0';
+                }
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            if (btnOpenAdd) btnOpenAdd.addEventListener('click', () => openModal(false));
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget;
+                    openModal(true, {
+                        id: target.dataset.id,
+                        name: target.dataset.name,
+                        desc: target.dataset.desc,
+                        order: target.dataset.order
+                    });
+                });
+            });
+
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+        </script>
+    </th:block>
+
+</body>
+</html>

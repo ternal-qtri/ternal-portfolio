@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layouts/layout}">
+<head>
+    <title>Trang Chủ | Nguyễn Quốc Trí (Ternal)</title>
+</head>
+<body>
+
+    <div layout:fragment="content" data-page-title="Trang Chủ | Nguyễn Quốc Trí (Ternal)">
+
+        <!-- System Node 3D HUD (Desktop Only) -->
+        <aside id="system-node-hud" class="fixed bottom-6 right-6 z-40 hidden lg:flex flex-col items-end gap-3 select-none">
+            <div class="bg-[#121214]/95 border border-zinc-800 p-4 rounded-xl shadow-2xl backdrop-blur-md w-64 space-y-3">
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-2.5">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="font-mono text-[11px] text-zinc-400 font-semibold uppercase">SYSTEM ARCHITECTURE</span>
+                    </div>
+                    <span id="hud-telemetry-percent" class="font-mono text-[11px] text-white font-bold">0%</span>
+                </div>
+
+                <div class="flex items-center gap-4 py-1">
+                    <div class="cube-container w-14 h-14 flex items-center justify-center bg-zinc-900/80 border border-zinc-800 rounded-lg">
+                        <div id="hud-wireframe-cube" class="wireframe-cube">
+                            <div class="cube-face cube-front"></div>
+                            <div class="cube-face cube-back"></div>
+                            <div class="cube-face cube-right"></div>
+                            <div class="cube-face cube-left"></div>
+                            <div class="cube-face cube-top"></div>
+                            <div class="cube-face cube-bottom"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex-grow space-y-1 font-mono text-[10px]">
+                        <p class="text-zinc-500">ACTIVE LAYER:</p>
+                        <p id="hud-telemetry-node" class="text-white font-semibold truncate">NODE 1: API GATEWAY</p>
+                        <p class="text-emerald-400">● 200 OK • STREAMING</p>
+                    </div>
+                </div>
+
+                <div class="space-y-1.5 pt-1">
+                    <div data-target="hero"
+                        class="hud-node-pill flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-white bg-zinc-800 text-white font-mono text-[11px] cursor-pointer transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="node-dot w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span class="node-label">01. API Gateway</span>
+                        </div>
+                        <span class="text-[10px] text-zinc-400">#hero</span>
+                    </div>
+
+                    <div data-target="about"
+                        class="hud-node-pill flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-transparent text-zinc-500 font-mono text-[11px] cursor-pointer hover:border-zinc-600 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="node-dot w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                            <span class="node-label">02. Core Backend</span>
+                        </div>
+                        <span class="text-[10px] text-zinc-500">#about</span>
+                    </div>
+
+                    <div data-target="projects"
+                        class="hud-node-pill flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-transparent text-zinc-500 font-mono text-[11px] cursor-pointer hover:border-zinc-600 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="node-dot w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                            <span class="node-label">03. Database Cluster</span>
+                        </div>
+                        <span class="text-[10px] text-zinc-500">#projects</span>
+                    </div>
+
+                    <div data-target="contact"
+                        class="hud-node-pill flex items-center justify-between px-2.5 py-1.5 rounded-lg border border-zinc-800 bg-transparent text-zinc-500 font-mono text-[11px] cursor-pointer hover:border-zinc-600 transition-colors">
+                        <div class="flex items-center gap-2">
+                            <span class="node-dot w-1.5 h-1.5 rounded-full bg-zinc-600"></span>
+                            <span class="node-label">04. Event Stream</span>
+                        </div>
+                        <span class="text-[10px] text-zinc-500">#contact</span>
+                    </div>
+                </div>
+
+                <div class="w-full bg-zinc-800 h-1 rounded-full overflow-hidden mt-2">
+                    <div id="hud-progress-fill" class="bg-white h-full w-0 transition-all duration-75"></div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Body -->
+        <main class="flex-grow pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-24 md:space-y-32">
+
+            <!-- Hero Section -->
+            <section id="hero"
+                class="hero-container relative pt-6 md:pt-10 pb-8 flex flex-col items-center text-center scroll-mt-32">
+
+                <div class="hero-element relative mb-6">
+                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border border-zinc-700 bg-zinc-900 p-1">
+                        <img th:src="@{/assets/images/avatar.jpg}" src="/assets/images/avatar.jpg"
+                            alt="Nguyễn Quốc Trí"
+                            class="w-full h-full object-cover rounded-xl hover:grayscale-0 transition-all duration-300">
+                    </div>
+
+                    <div
+                        class="absolute -bottom-2 -right-2 px-2 py-0.5 rounded-md bg-[#121214] border border-zinc-800 text-[10px] font-mono text-zinc-300 flex items-center gap-1.5 shadow-md">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        <span>ONLINE</span>
+                    </div>
+                </div>
+
+                <div
+                    class="hero-element inline-flex items-center gap-2 px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-300 text-xs font-mono mb-6">
+                    <span>// BACKEND DEVELOPER • JAVA & SPRING BOOT</span>
+                </div>
+
+                <h1
+                    class="hero-element text-4xl sm:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6 max-w-3xl">
+                    Nguyễn Quốc Trí
+                </h1>
+
+                <p class="hero-element text-sm sm:text-base md:text-lg text-zinc-400 leading-relaxed max-w-2xl mx-auto mb-8 font-sans">
+                    Học hỏi, đam mê và không ngừng hoàn thiện
+                </p>
+
+                <div class="hero-element flex flex-wrap items-center justify-center gap-3 w-full sm:w-auto">
+                    <a th:href="@{/projects}" href="/projects"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-semibold text-xs text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95">
+                        <span>Xem các dự án</span>
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                    </a>
+
+                    <a th:href="@{/contact}" href="/contact"
+                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg font-medium text-xs text-zinc-200 bg-[#121214] hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-600 transition-colors active:scale-95">
+                        <span>Liên hệ</span>
+                    </a>
+                </div>
+
+                <!-- Terminal Command Box -->
+                <div class="hero-element mt-12 w-full max-w-2xl rounded-xl bg-[#000000] border border-zinc-800 overflow-hidden font-mono text-xs shadow-xl text-left">
+                    <div class="flex items-center justify-between px-4 py-2.5 bg-[#121214] border-b border-zinc-800">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                        </div>
+                        <span class="text-zinc-500 text-[11px]">ternal@spring-engine: ~</span>
+                        <span class="text-zinc-600 text-[11px]">bash</span>
+                    </div>
+                    <div class="p-4 space-y-1.5 text-zinc-300 leading-relaxed overflow-x-auto text-[11px]">
+                        <p>
+                            <span class="text-white font-bold">➜</span> 
+                            <span class="text-zinc-400">~/portfolio</span> 
+                            <span id="terminal-typing" class="text-white font-semibold">
+                                mvn spring-boot:run
+                            </span>
+                            <span class="w-1.5 h-3.5 bg-white inline-block align-middle ml-1"></span>
+                        </p>
+                        <p class="text-zinc-600">[INFO] Tomcat initialized with port(s): 8080 (http)</p>
+                        <p class="text-zinc-600">[INFO] Spring Security Filter Chain: JWT & OAuth2 ENABLED</p>
+                        <p class="text-zinc-400">[SUCCESS] Started Application in 1.284s (JVM running for 1.82s)</p>
+                        <p class="text-emerald-400 font-medium">✔ Ready for incoming requests • PostgreSQL Connected</p>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- About Section -->
+            <section id="about" class="reveal-on-scroll scroll-mt-28">
+
+                <div
+                    class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-zinc-800 gap-4">
+                    <div>
+                        <span class="font-mono text-xs text-zinc-500 uppercase tracking-wider">// 01. VỀ TÔI</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Giới thiệu bản thân</h2>
+                    </div>
+                    <p class="text-xs text-zinc-500 font-mono">
+                        Nền tảng kỹ thuật & định hướng hệ thống
+                    </p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-5">
+                    <div
+                        class="bento-card md:col-span-8 bg-[#121214] border border-zinc-800 hover:border-zinc-600 rounded-xl p-6 sm:p-7 transition-colors flex flex-col justify-between">
+                        <div class="space-y-4 text-zinc-300 leading-relaxed text-m">
+                            <p>
+                                Tôi là <strong class="text-white font-semibold">Nguyễn Quốc Trí</strong>, hiện đang
+                                là sinh viên chuyên ngành <strong class="text-white">Phát triển phần mềm</strong> tại
+                                <span class="text-zinc-200">Cao đẳng FPT Polytechnic</span>. Với niềm yêu thích dành cho công nghệ và quá trình xây dựng phần mềm, tôi đặc biệt hứng thú với việc tìm hiểu cách một hệ thống được thiết kế, vận hành và phát triển từ một ý tưởng ban đầu thành sản phẩm thực tế.
+                            </p>
+                            <p>
+                                Trong quá trình học tập, tôi chủ động khám phá nhiều công nghệ khác nhau, đồng thời không ngừng củng cố những kiến thức nền tảng về lập trình, cơ sở dữ liệu và phát triển ứng dụng. Tôi tin rằng việc học lập trình không chỉ là ghi nhớ cú pháp hay sử dụng công cụ, mà quan trọng hơn là rèn luyện tư duy, khả năng giải quyết vấn đề và cách tiếp cận một bài toán.
+                            </p>
+                            <p>
+                                Mục tiêu của tôi là từng bước xây dựng nền tảng vững chắc, tích lũy kinh nghiệm qua các dự án thực tế và trở thành một lập trình viên có khả năng tạo ra những sản phẩm phần mềm hữu ích, chất lượng.
+                            </p>
+                        </div>
+
+                        <div class="mt-6 pt-5 border-t border-zinc-800/80 flex flex-wrap items-center gap-2">
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
+                                <img src="https://files.svgcdn.io/devicon/java.svg" alt="Java" class="w-4 h-4">
+                                <span>Java</span>
+                            </div>
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
+                                <img src="https://spring.io/img/projects/spring-boot.svg" alt="Spring Boot" class="w-4 h-4">
+                                <span>Spring Boot</span>
+                            </div>
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
+                                <img src="https://files.svgcdn.io/devicon/postgresql.svg" alt="PostgreSQL" class="w-4 h-4">
+                                <span>PostgreSQL</span>
+                            </div>
+                            <div
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300">
+                                <img src="https://cdn.iconscout.com/icon/free/png-256/free-jwt-icon-svg-download-png-14550126.png?f=webp&w=128" alt="JWT" class="w-4 h-4">
+                                <span>JWT</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="md:col-span-4 flex flex-col gap-5">
+                        <div
+                            class="bento-card bg-[#121214] border border-zinc-800 hover:border-zinc-600 rounded-xl p-5 transition-colors">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center font-mono text-sm">
+                                    🎓
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-white text-sm">Học Vấn</h3>
+                                    <span class="text-[11px] text-zinc-500 font-mono">FPT Polytechnic</span>
+                                </div>
+                            </div>
+                            <p class="text-m text-zinc-300 leading-relaxed mb-1">
+                                Ngành: <span class="text-white font-medium">Phát triển phần mềm</span>
+                                <br/>
+                                GPA: <span class="text-white font-medium">3.41</span>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+
+            </section>
+            
+            <!-- Featured Projects Section -->
+            <section id="projects" class="reveal-on-scroll scroll-mt-28">
+                <div
+                    class="flex flex-col md:flex-row md:items-end justify-between mb-8 pb-4 border-b border-zinc-800 gap-4">
+                    <div>
+                        <span class="font-mono text-xs text-zinc-500 uppercase tracking-wider">// 02. DỰ ÁN NỔI BẬT</span>
+                        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mt-1">Một số dự án tiêu biểu
+                        </h2>
+                    </div>
+                    <p class="text-xs text-zinc-500 font-mono">
+                        Kiến trúc Backend & Xử lý dữ liệu thực tế
+                    </p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+                    <!-- Featured Project Card -->
+                    <div th:each="p : ${featuredProjects}"
+                        class="project-card group bg-[#121214] border border-zinc-800 hover:border-zinc-500 rounded-xl overflow-hidden transition-colors flex flex-col justify-between shadow-lg">
+                        <div>
+                            <div class="relative w-full aspect-[1919/969] bg-[#000000] border-b border-zinc-800 overflow-hidden">
+                                <img th:src="${p.coverImage != null && !p.coverImage.isEmpty() ? p.coverImage : 'https://images.unsplash.com/photo-1557821552-17105176677c?w=1200'}"
+                                    th:alt="${p.title}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                                <div class="absolute top-2.5 left-2.5 px-2 py-0.5 rounded bg-black/85 border border-zinc-800 text-[10px] font-mono text-zinc-300 backdrop-blur-sm"
+                                    th:text="'#PROJ-' + (${p.id < 10} ? '0' + ${p.id} : ${p.id}) + ' • ' + (${p.type == 'PERSONAL'} ? 'PERSONAL' : 'TEAM')">
+                                    #PROJ-01 • PERSONAL
+                                </div>
+                                <div class="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-2 py-0.5 rounded bg-emerald-950/80 border border-emerald-800/80 text-[10px] font-mono text-emerald-400 backdrop-blur-sm">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    <span th:text="${p.status != null ? p.status : 'ACTIVE'}">ACTIVE</span>
+                                </div>
+                            </div>
+
+                            <div class="p-5 space-y-3">
+                                <div class="flex flex-wrap gap-1.5" th:if="${p.top3Tags != null and !p.top3Tags.isEmpty()}">
+                                    <span th:each="tech : ${p.top3Tags}"
+                                        class="px-2 py-0.5 rounded text-[11px] font-mono bg-zinc-900 text-zinc-300 border border-zinc-800"
+                                        th:text="${tech}">Spring Boot</span>
+                                </div>
+                                <h4 class="text-base font-bold text-white group-hover:text-zinc-200 transition-colors leading-snug line-clamp-2"
+                                    th:text="${p.title}">Tiêu đề dự án</h4>
+                                <p class="text-xs text-zinc-400 leading-relaxed line-clamp-2"
+                                    th:text="${p.shortDescription}">Mô tả ngắn</p>
+                            </div>
+                        </div>
+
+                        <div class="p-5 pt-0">
+                            <a th:href="@{/projects/detail(id=${p.id})}"
+                                class="w-full inline-flex items-center justify-between px-4 py-2.5 rounded-lg text-xs font-semibold text-zinc-200 bg-zinc-900 hover:bg-white hover:text-black border border-zinc-800 hover:border-white transition-colors duration-200">
+                                <span>Xem chi tiết dự án</span>
+                                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Trạng thái trống nếu chưa có dự án nào -->
+                    <div th:if="${#lists.isEmpty(featuredProjects)}" class="col-span-full py-12 text-center border border-zinc-800/80 rounded-2xl bg-[#121214]">
+                        <p class="text-xs font-mono text-zinc-400">// ĐANG CẬP NHẬT DỰ ÁN TIÊU BIỂU</p>
+                    </div>
+
+                </div>
+
+                <div class="mt-10 text-center">
+                    <a th:href="@{/projects}" href="/projects"
+                        class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-xs text-zinc-200 bg-[#121214] hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-500 transition-colors group">
+                        <span>Khám phá toàn bộ danh mục dự án</span>
+                        <span class="group-hover:translate-x-1 transition-transform">→</span>
+                    </a>
+                </div>
+
+            </section>
+
+            <!-- Contact CTA Section -->
+            <section id="contact" class="reveal-on-scroll scroll-mt-28">
+                <div
+                    class="bg-[#121214] border border-zinc-800 rounded-2xl p-8 md:p-10 text-center max-w-3xl mx-auto space-y-6">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-mono">
+                        <span>// 03. LIÊN HỆ</span>
+                    </div>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight">
+                        Hãy bắt đầu một cuộc trò chuyện
+                    </h2>
+                    <p class="text-sm text-zinc-400 leading-relaxed max-w-xl mx-auto">
+                        Mọi cuộc trò chuyện đều có thể mở ra một ý tưởng mới. <br/>
+                        Nếu bạn muốn trao đổi, hợp tác hoặc chia sẻ một điều thú vị, tôi rất vui được kết nối.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-3 pt-2">
+                        <a href="mailto:ternal.qtri@gmail.com"
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-semibold text-xs text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95">
+                            <span>Gửi Email cho tôi</span>
+                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </a>
+                        <a th:href="@{/contact}" href="/contact"
+                            class="inline-flex items-center gap-2 px-6 py-3 rounded-lg font-medium text-xs text-zinc-200 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-600 transition-colors">
+                            <span>Đến trang liên hệ</span>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
+</html>

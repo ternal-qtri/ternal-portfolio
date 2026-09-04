@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layouts/layout}">
+<head>
+    <title>404 — Không Tìm Thấy Trang | Ternal Portfolio</title>
+</head>
+<body>
+
+    <div layout:fragment="content" data-page-title="404 — Không Tìm Thấy Trang | Ternal Portfolio"
+         class="flex-grow flex items-center justify-center pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
+
+        <div class="w-full max-w-2xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-8 reveal-on-scroll">
+
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <span class="font-mono text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-lg">
+                    // HTTP_STATUS: 404_NOT_FOUND
+                </span>
+                <span class="font-mono text-xs text-zinc-500">
+                    ROUTING_RESOLVER
+                </span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-baseline gap-3">
+                    <span class="font-mono text-6xl sm:text-7xl font-extrabold text-white tracking-tighter">404</span>
+                    <span class="font-mono text-xs text-zinc-500 uppercase">// RESOURCE_NOT_FOUND</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Không tìm thấy tài nguyên yêu cầu
+                </h1>
+                <p class="text-sm text-zinc-400 leading-relaxed font-sans">
+                    Địa chỉ URL bạn truy cập không tồn tại, đã bị gỡ bỏ hoặc thay đổi cấu trúc định tuyến trong kiến trúc hệ thống.
+                </p>
+            </div>
+
+            <!-- Technical Telemetry Box -->
+            <div class="bg-[#09090B] border border-zinc-800/80 rounded-xl p-4 font-mono text-xs space-y-2">
+                <div class="flex justify-between text-zinc-500">
+                    <span>STATUS:</span>
+                    <span class="text-emerald-400">GATEWAY_ACTIVE (200 OK)</span>
+                </div>
+                <div class="flex justify-between text-zinc-500">
+                    <span>PATH_RESOLUTION:</span>
+                    <span class="text-rose-400">ROUTE_UNRESOLVED</span>
+                </div>
+                <div class="flex justify-between text-zinc-500">
+                    <span>RECOMMENDATION:</span>
+                    <span class="text-zinc-300">RETURN_TO_INDEX_OR_PROJECTS</span>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <a th:href="@{/}" href="/"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm bg-white text-black hover:bg-zinc-200 transition-all duration-200 active:scale-95 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                    <span>Về Trang Chủ</span>
+                </a>
+                <a th:href="@{/projects}" href="/projects"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-medium text-sm text-zinc-200 bg-[#121214] hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-500 transition-all duration-200 active:scale-95">
+                    <span>Xem danh sách dự án →</span>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

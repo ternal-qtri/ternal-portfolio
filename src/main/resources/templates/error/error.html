@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layouts/layout}">
+<head>
+    <title th:text="(${status != null ? status : 'Lỗi'} + ' — Sự Cố Hệ Thống | Ternal Portfolio')">Sự Cố Hệ Thống | Ternal Portfolio</title>
+</head>
+<body>
+
+    <div layout:fragment="content" data-page-title="Sự Cố Hệ Thống | Ternal Portfolio"
+         class="flex-grow flex items-center justify-center pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8">
+
+        <div class="w-full max-w-2xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-10 shadow-2xl space-y-8 reveal-on-scroll">
+
+            <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                <span class="font-mono text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 px-3 py-1 rounded-lg"
+                      th:text="'// HTTP_STATUS: ' + (${status != null} ? ${status} : 'UNKNOWN')">
+                    // HTTP_STATUS: ERROR
+                </span>
+                <span class="font-mono text-xs text-zinc-500">
+                    GATEWAY_ERROR
+                </span>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-baseline gap-3">
+                    <span class="font-mono text-6xl sm:text-7xl font-extrabold text-white tracking-tighter"
+                          th:text="${status != null ? status : 'ERR'}">500</span>
+                    <span class="font-mono text-xs text-zinc-500 uppercase"
+                          th:text="'// ' + (${error != null} ? ${error} : 'SYSTEM_ANOMALY')">// SYSTEM_ANOMALY</span>
+                </div>
+                <h1 class="text-xl sm:text-2xl font-bold text-white tracking-tight">
+                    Đã xảy ra sự cố ngoài dự kiến
+                </h1>
+                <p class="text-sm text-zinc-400 leading-relaxed font-sans"
+                   th:text="${message != null && !message.isEmpty() ? message : 'Yêu cầu không thể hoàn tất do sự cố hệ thống. Vui lòng thử lại sau.'}">
+                    Yêu cầu không thể hoàn tất do sự cố hệ thống. Vui lòng thử lại sau.
+                </p>
+            </div>
+
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <a th:href="@{/}" href="/"
+                    class="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-sm bg-white text-black hover:bg-zinc-200 transition-all duration-200 active:scale-95 shadow-sm">
+                    <span>← Về Trang Chủ</span>
+                </a>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

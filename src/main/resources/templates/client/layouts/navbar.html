@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<nav id="main-navbar" class="fixed top-4 md:top-6 inset-x-0 z-50 max-w-5xl mx-auto px-4 transition-all duration-300" th:fragment="navbar">
+  <div class="bg-[#121214]/90 border border-zinc-800 hover:border-zinc-700 rounded-xl px-4 md:px-5 py-3 backdrop-blur-md flex items-center justify-between shadow-lg shadow-black/80 transition-colors">
+
+    <a th:href="@{/}" href="/" class="flex items-center gap-2 text-white font-bold text-base tracking-tight group">
+      <span class="w-7 h-7 rounded-lg bg-white flex items-center justify-center font-mono text-xs text-black font-extrabold shadow-sm group-hover:bg-zinc-200 transition-colors">
+        T
+      </span>
+      <span class="font-sans font-bold text-white tracking-tight">
+        Ternal<span class="text-zinc-500 font-mono text-sm"> - Nguyen Quoc Tri</span>
+      </span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-1 bg-[#09090B] p-1 rounded-lg border border-zinc-800">
+      <a th:href="@{/}" href="/" class="nav-link px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        Trang chủ
+      </a>
+      <a th:href="@{/projects}" href="/projects" class="nav-link px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        Dự án
+      </a>
+      <a th:href="@{/skills}" href="/skills" class="nav-link px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        Kỹ năng
+      </a>
+      <a th:href="@{/contact}" href="/contact" class="nav-link px-3.5 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+        Liên hệ
+      </a>
+    </div>
+
+    <div class="flex items-center gap-3">
+
+      <a th:href="@{/contact}" href="/contact" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95">
+        <span>Liên hệ ngay</span>
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </a>
+
+      <button 
+        type="button" 
+        id="mobile-menu-btn" 
+        aria-label="Mở menu điều hướng"
+        class="md:hidden w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex flex-col items-center justify-center gap-1.5 text-zinc-300 hover:text-white hover:border-zinc-700 transition-colors focus:outline-none"
+      >
+        <span class="w-4 h-0.5 bg-current"></span>
+        <span class="w-4 h-0.5 bg-current"></span>
+        <span class="w-4 h-0.5 bg-current"></span>
+      </button>
+
+    </div>
+  </div>
+
+  <div 
+    id="mobile-menu" 
+    class="hidden md:hidden mt-2 bg-[#121214] border border-zinc-800 rounded-xl p-3 shadow-2xl flex-col gap-1 transition-all"
+  >
+    <a th:href="@{/}" href="/" class="mobile-nav-link flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors">
+      <span>Trang chủ</span>
+      <span class="text-[11px] text-zinc-600 font-mono">01</span>
+    </a>
+    <a th:href="@{/projects}" href="/projects" class="mobile-nav-link flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors">
+      <span>Dự án</span>
+      <span class="text-[11px] text-zinc-600 font-mono">02</span>
+    </a>
+    <a th:href="@{/skills}" href="/skills" class="mobile-nav-link flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors">
+      <span>Kỹ năng</span>
+      <span class="text-[11px] text-zinc-600 font-mono">03</span>
+    </a>
+    <a th:href="@{/contact}" href="/contact" class="mobile-nav-link flex items-center justify-between px-3 py-2.5 rounded-lg text-xs font-medium text-zinc-300 hover:bg-zinc-900 hover:text-white transition-colors">
+      <span>Liên hệ</span>
+      <span class="text-[11px] text-zinc-600 font-mono">04</span>
+    </a>
+    
+    <div class="pt-2 mt-1 border-t border-zinc-800">
+      <a th:href="@{/contact}" href="/contact" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+        <span>Liên hệ hợp tác</span>
+        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+        </svg>
+      </a>
+    </div>
+  </div>
+</nav>
+</body>
+</html>

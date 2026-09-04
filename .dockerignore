@@ -1,0 +1,55 @@
+# ==============================================================================
+# .dockerignore for Spring Boot (Ternal Portfolio)
+# Loại bỏ các file thừa, cache, bí mật để tối ưu kích thước build context
+# ==============================================================================
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Maven & Build outputs
+target/
+*.jar
+*.war
+.mvn/wrapper/maven-wrapper.jar
+
+# IDEs & Code Editors
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/
+.factorypath
+.nb-gradle/
+
+# Secrets & Environment variables (Bảo mật thông tin cấu hình)
+.env
+.env.*
+*.env
+*.properties.local
+
+# OS generated files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Temporary files
+logs/
+*.log
+tmp/
+temp/
+
+# Documentation & Assets không phục vụ runtime
+*.md
+design-system.md
+docs/
+scratch/
+
+# Docker build configs
+Dockerfile*
+docker-compose*.yml
+.dockerignore

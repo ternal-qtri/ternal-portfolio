@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/layout}">
+<head>
+    <title>Quản Lý Kỹ Năng | Ternal.dev Admin</title>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <!-- Top Action Bar & Header -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+            <div>
+                <div
+                    class="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 mb-2">
+                    <span>// DATABASE ENTITY: SKILL_ITEM</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Quản lý kỹ năng
+                </h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1 font-sans">
+                    Quản lý danh sách chi tiết các công nghệ, logo SVG Devicon, mức độ thành thạo và phân nhóm danh mục.
+                </p>
+            </div>
+
+            <!-- Nút "Thêm mới" -->
+            <button type="button" id="btn-open-add-modal"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95 shadow-sm self-start sm:self-auto">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Thêm kỹ năng mới</span>
+            </button>
+        </section>
+
+        <!-- Flash Messages Alert -->
+        <div th:if="${successMessage}" class="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-white">✕</button>
+        </div>
+        <div th:if="${errorMessage}" class="p-3.5 rounded-xl bg-red-950/60 border border-red-800 text-xs text-red-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-white">✕</button>
+        </div>
+
+        <!-- Bộ Lọc & Tìm Kiếm -->
+        <form method="GET" th:action="@{/admin/skills}"
+            class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#121214] border border-zinc-800 p-3.5 rounded-xl">
+
+            <div class="flex items-center gap-2">
+                <label for="category-filter" class="text-xs font-mono text-zinc-400 whitespace-nowrap">
+                    LỌC THEO LOẠI:
+                </label>
+                <select id="category-filter" name="categoryId" onchange="this.form.submit()"
+                    class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-zinc-500 transition-colors">
+                    <option value="">Tất cả loại kỹ năng</option>
+                    <option th:each="cat : ${categories}"
+                            th:value="${cat.id}"
+                            th:text="${cat.name}"
+                            th:selected="${selectedCategoryId != null && selectedCategoryId == cat.id}">
+                    </option>
+                </select>
+            </div>
+
+            <div class="relative max-w-xs w-full">
+                <input type="text" id="skill-search" name="search" th:value="${search}" placeholder="Tìm theo tên kỹ năng... (Enter)"
+                    class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-zinc-600">/ SEARCH</span>
+            </div>
+
+        </form>
+
+        <!-- Bảng danh sách kỹ năng -->
+        <section class="bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table id="skills-table" class="w-full text-left text-xs">
+                    <thead
+                        class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 font-mono uppercase text-[11px]">
+                        <tr>
+                            <th scope="col" class="py-3.5 px-4 w-14 text-center">STT</th>
+                            <th scope="col" class="py-3.5 px-4 w-[240px]">Kỹ năng / Công nghệ</th>
+                            <th scope="col" class="py-3.5 px-4 w-52">Loại kỹ năng</th>
+                            <th scope="col" class="py-3.5 px-4 w-40">Mức độ thành thạo</th>
+                            <th scope="col" class="py-3.5 px-4 w-20 text-center">Thứ tự</th>
+                            <th scope="col" class="py-3.5 px-4 w-24 text-center">Trạng thái</th>
+                            <th scope="col" class="py-3.5 px-4 w-44 text-center">Hành động</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="skills-tbody" class="divide-y divide-zinc-800/80 font-sans text-zinc-300">
+                        <tr th:each="skill, iterStat : ${skills.content}" class="hover:bg-zinc-900/50 transition-colors">
+                            <td class="py-3.5 px-4 text-center font-mono text-zinc-500 font-semibold"
+                                th:text="${skills.number * skills.size + iterStat.count}">01</td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-8 h-8 rounded bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1.5 flex-shrink-0">
+                                        <img th:src="${skill.iconUrl != null && !skill.iconUrl.isEmpty() ? skill.iconUrl : 'https://files.svgcdn.io/devicon/spring.svg'}"
+                                             alt="Skill Icon" class="w-full h-full object-contain"
+                                             onerror="this.src='https://files.svgcdn.io/devicon/spring.svg'">
+                                    </div>
+                                    <div>
+                                        <strong class="text-white block" th:text="${skill.name}">Spring Boot 3</strong>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 font-mono text-[11px] text-zinc-300"
+                                th:text="${skill.category != null ? skill.category.name : 'Chưa phân loại'}">Backend</td>
+                            <td class="py-3.5 px-4">
+                                <span
+                                    class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-800/80 text-[10px] font-mono text-emerald-400">
+                                    <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
+                                    <span th:text="${skill.proficiency}">Chuyên sâu / Core</span>
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center font-mono text-zinc-300" th:text="${skill.orderIndex}">1</td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span
+                                    class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-emerald-400">
+                                    ● Hiển thị
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center space-x-1 font-mono">
+                                <button type="button"
+                                    class="btn-edit px-2.5 py-1 rounded text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                                    th:data-id="${skill.id}"
+                                    th:data-name="${skill.name}"
+                                    th:data-category-id="${skill.category != null ? skill.category.id : ''}"
+                                    th:data-icon="${skill.iconUrl}"
+                                    th:data-proficiency="${skill.proficiency}"
+                                    th:data-order="${skill.orderIndex}">
+                                    Sửa
+                                </button>
+                                <form th:action="@{/admin/skills/delete/{id}(id=${skill.id})}" method="POST" class="inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa kỹ năng này không?');">
+                                    <button type="submit"
+                                        class="px-2.5 py-1 rounded text-zinc-400 hover:text-white bg-zinc-900 hover:bg-red-950/60 border border-zinc-800 hover:border-red-800 transition-colors">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${skills.empty}">
+                            <td colspan="7" class="py-8 text-center text-zinc-500 font-mono text-xs">
+                                Không tìm thấy kỹ năng nào phù hợp.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang (Pagination) -->
+            <div class="px-4 py-3 bg-zinc-900/50 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
+                <div>
+                    HIỂN THỊ <span class="text-white font-bold" th:text="${skills.numberOfElements}">0</span> / 
+                    <span class="text-white font-bold" th:text="${skills.totalElements}">0</span> KỸ NĂNG
+                    (TRANG <span class="text-white font-bold" th:text="${skills.totalPages > 0 ? skills.number + 1 : 1}">1</span> / <span th:text="${skills.totalPages > 0 ? skills.totalPages : 1}">1</span>)
+                </div>
+                <div th:if="${skills.totalPages > 1}" class="flex items-center gap-1">
+                    <a th:href="@{/admin/skills(page=${skills.number - 1}, categoryId=${selectedCategoryId}, search=${search})}"
+                       th:classappend="${skills.first} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        ← Trước
+                    </a>
+                    <th:block th:each="i : ${#numbers.sequence(0, skills.totalPages - 1)}">
+                        <a th:href="@{/admin/skills(page=${i}, categoryId=${selectedCategoryId}, search=${search})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == skills.number} ? 'bg-white text-black font-bold' : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'"
+                           class="px-3 py-1.5 rounded-lg transition-colors">
+                            1
+                        </a>
+                    </th:block>
+                    <a th:href="@{/admin/skills(page=${skills.number + 1}, categoryId=${selectedCategoryId}, search=${search})}"
+                       th:classappend="${skills.last} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        Sau →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skill Modal -->
+        <div id="skill-modal"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div
+                class="w-full max-w-xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative">
+
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <div class="space-y-1">
+                        <h2 id="modal-title" class="text-lg font-bold text-white tracking-tight">
+                            Thêm kỹ năng mới
+                        </h2>
+                        <p class="text-xs text-zinc-400 font-sans">
+                            Cấu hình thông số công nghệ hiển thị trực tiếp trên trang Portfolio
+                        </p>
+                    </div>
+                    <button type="button" id="btn-close-modal"
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <form id="skill-form" th:action="@{/admin/skills/save}" method="POST" class="space-y-4">
+
+                    <input type="hidden" id="skill-id" name="id">
+
+                    <div class="space-y-1.5">
+                        <label for="skill-name" class="block text-xs font-mono font-medium text-zinc-300">
+                            TÊN KỸ NĂNG / CÔNG NGHỆ <span class="text-white font-bold">*</span>
+                        </label>
+                        <input type="text" id="skill-name" name="name" required placeholder="vd: Spring Boot 3"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-sans focus:outline-none focus:border-white transition-colors">
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="skill-category-select" class="block text-xs font-mono font-medium text-zinc-300">
+                            LOẠI KỸ NĂNG (DANH MỤC) <span class="text-white font-bold">*</span>
+                        </label>
+                        <select id="skill-category-select" name="categoryId" required
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 text-xs font-sans focus:outline-none focus:border-white transition-colors">
+                            <option value="">-- Chọn loại kỹ năng --</option>
+                            <option th:each="cat : ${categories}"
+                                    th:value="${cat.id}"
+                                    th:text="${cat.name}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="skill-icon" class="block text-xs font-mono font-medium text-zinc-300">
+                            LINK ICON SVG (DEVICON)
+                        </label>
+                        <div class="flex items-center gap-2">
+                            <input type="url" id="skill-icon" name="iconUrl"
+                                placeholder="https://files.svgcdn.io/devicon/spring.svg"
+                                class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 text-xs font-mono focus:outline-none focus:border-white transition-colors">
+                            <div id="icon-preview-box"
+                                class="w-9 h-9 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center p-1 flex-shrink-0">
+                                <img id="icon-preview-img" src="https://files.svgcdn.io/devicon/spring.svg" alt="Preview"
+                                    class="w-full h-full object-contain">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="skill-level" class="block text-xs font-mono font-medium text-zinc-300">
+                            MỨC ĐỘ THÀNH THẠO
+                        </label>
+                        <select id="skill-level" name="proficiency"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 text-xs font-sans focus:outline-none focus:border-white transition-colors">
+                            <option value="Chuyên sâu / Core">Chuyên sâu / Core</option>
+                            <option value="Thành thạo">Thành thạo</option>
+                            <option value="Nền tảng tốt">Nền tảng tốt</option>
+                            <option value="Cơ bản">Cơ bản</option>
+                        </select>
+                    </div>
+
+                    <div class="space-y-1.5">
+                        <label for="skill-order" class="block text-xs font-mono font-medium text-zinc-300">
+                            THỨ TỰ HIỂN THỊ
+                        </label>
+                        <input type="number" id="skill-order" name="orderIndex" min="0" value="0"
+                            class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 text-xs font-mono focus:outline-none focus:border-white transition-colors">
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-end gap-3 border-t border-zinc-800">
+                        <button type="button" id="btn-cancel-modal"
+                            class="px-4 py-2 rounded-lg text-xs font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors">
+                            Hủy bỏ
+                        </button>
+                        <button type="submit" id="btn-submit-modal"
+                            class="px-5 py-2 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+                            Lưu kỹ năng
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            const modal = document.getElementById('skill-modal');
+            const btnOpenAdd = document.getElementById('btn-open-add-modal');
+            const btnClose = document.getElementById('btn-close-modal');
+            const btnCancel = document.getElementById('btn-cancel-modal');
+            const modalTitle = document.getElementById('modal-title');
+
+            const skillId = document.getElementById('skill-id');
+            const skillName = document.getElementById('skill-name');
+            const skillCategory = document.getElementById('skill-category-select');
+            const skillIcon = document.getElementById('skill-icon');
+            const iconPreviewImg = document.getElementById('icon-preview-img');
+            const skillLevel = document.getElementById('skill-level');
+            const skillOrder = document.getElementById('skill-order');
+
+            function openModal(isEdit = false, data = {}) {
+                if (isEdit) {
+                    modalTitle.textContent = 'Cập nhật kỹ năng';
+                    skillId.value = data.id || '';
+                    skillName.value = data.name || '';
+                    skillCategory.value = data.categoryId || '';
+                    skillIcon.value = data.icon || '';
+                    skillLevel.value = data.proficiency || 'Chuyên sâu / Core';
+                    skillOrder.value = data.order || '0';
+                    iconPreviewImg.src = data.icon || 'https://files.svgcdn.io/devicon/spring.svg';
+                } else {
+                    modalTitle.textContent = 'Thêm kỹ năng mới';
+                    skillId.value = '';
+                    skillName.value = '';
+                    skillCategory.value = '';
+                    skillIcon.value = '';
+                    skillLevel.value = 'Chuyên sâu / Core';
+                    skillOrder.value = '0';
+                    iconPreviewImg.src = 'https://files.svgcdn.io/devicon/spring.svg';
+                }
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            if (btnOpenAdd) btnOpenAdd.addEventListener('click', () => openModal(false));
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const target = e.currentTarget;
+                    openModal(true, {
+                        id: target.dataset.id,
+                        name: target.dataset.name,
+                        categoryId: target.dataset.categoryId,
+                        icon: target.dataset.icon,
+                        proficiency: target.dataset.proficiency,
+                        order: target.dataset.order
+                    });
+                });
+            });
+
+            if (skillIcon) {
+                skillIcon.addEventListener('input', (e) => {
+                    const val = e.target.value.trim();
+                    iconPreviewImg.src = val ? val : 'https://files.svgcdn.io/devicon/spring.svg';
+                });
+            }
+
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+        </script>
+    </th:block>
+
+</body>
+</html>

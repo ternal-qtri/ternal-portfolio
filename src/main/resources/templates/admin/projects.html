@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/layout}">
+<head>
+    <title>Quản Lý Dự Án | Ternal.dev Admin</title>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <!-- Top Action Bar & Header -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+            <div>
+                <div
+                    class="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 mb-2">
+                    <span>// DATABASE ENTITY: PROJECT_REPOSITORY</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Quản lý dự án
+                </h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1 font-sans">
+                    Quản lý chi tiết các dự án, ảnh bìa lưu trữ Cloudinary, video demo YouTube, mã nguồn GitHub và thông số kiến trúc.
+                </p>
+            </div>
+
+            <!-- Nút "Thêm mới" -->
+            <button type="button" id="btn-open-add-modal"
+                class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors active:scale-95 shadow-sm self-start sm:self-auto">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>Thêm dự án mới</span>
+            </button>
+        </section>
+
+        <!-- Flash Messages Alert -->
+        <div th:if="${successMessage}" class="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-white">✕</button>
+        </div>
+        <div th:if="${errorMessage}" class="p-3.5 rounded-xl bg-red-950/60 border border-red-800 text-xs text-red-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-white">✕</button>
+        </div>
+
+        <!-- Bộ Lọc & Tìm Kiếm Dự Án -->
+        <form th:action="@{/admin/projects}" method="GET"
+            class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#121214] border border-zinc-800 p-3.5 rounded-xl">
+
+            <div class="flex items-center gap-2">
+                <label for="project-type-filter" class="text-xs font-mono text-zinc-400 whitespace-nowrap">
+                    KIỂU DỰ ÁN:
+                </label>
+                <select id="project-type-filter" name="type" onchange="this.form.submit()"
+                    class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-zinc-500 transition-colors cursor-pointer">
+                    <option value="ALL" th:selected="${selectedType == 'ALL'}">Tất cả kiểu dự án</option>
+                    <option value="PERSONAL" th:selected="${selectedType == 'PERSONAL'}">Dự án Cá nhân</option>
+                    <option value="TEAM" th:selected="${selectedType == 'TEAM'}">Dự án Nhóm</option>
+                </select>
+            </div>
+
+            <div class="relative max-w-xs w-full">
+                <input type="text" name="search" th:value="${search}" placeholder="Tìm theo tên dự án, công nghệ..."
+                    class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors" />
+                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-zinc-500 hover:text-white">↵ SEARCH</button>
+            </div>
+
+        </form>
+
+        <!-- Bảng danh sách dự án -->
+        <section class="bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table id="projects-table" class="w-full text-left text-xs">
+                    <thead
+                        class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 font-mono uppercase text-[11px]">
+                        <tr>
+                            <th scope="col" class="py-3.5 px-4 w-14 text-center">STT</th>
+                            <th scope="col" class="py-3.5 px-4 min-w-[260px]">Ảnh bìa & Tiêu đề dự án</th>
+                            <th scope="col" class="py-3.5 px-4 w-36">Kiểu dự án</th>
+                            <th scope="col" class="py-3.5 px-4 w-48">Vai trò & Thời gian</th>
+                            <th scope="col" class="py-3.5 px-4 min-w-[180px]">Công nghệ chính</th>
+                            <th scope="col" class="py-3.5 px-4 w-28 text-center">Trạng thái</th>
+                            <th scope="col" class="py-3.5 px-4 w-44 text-center">Hành động</th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="projects-tbody" class="divide-y divide-zinc-800/80 font-sans text-zinc-300">
+
+                        <tr th:each="p, iterStat : ${projects.content}"
+                            class="hover:bg-zinc-900/50 transition-colors project-row"
+                            th:data-id="${p.id}"
+                            th:data-type="${p.type}">
+                            <td class="py-3.5 px-4 text-center font-mono text-zinc-500 font-semibold"
+                                th:text="${(projects.number * 10) + iterStat.count < 10 ? '0' + ((projects.number * 10) + iterStat.count) : (projects.number * 10) + iterStat.count}">
+                                01
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-16 aspect-[1919/969] rounded bg-black border border-zinc-800 overflow-hidden flex-shrink-0">
+                                        <img th:src="${p.coverImage != null && !p.coverImage.isEmpty() ? p.coverImage : 'https://images.unsplash.com/photo-1557821552-17105176677c?w=400'}"
+                                             th:alt="${p.title}" class="w-full h-full object-cover">
+                                    </div>
+                                    <div class="min-w-0">
+                                        <strong class="text-white block truncate leading-snug" th:text="${p.title}">
+                                            E-Commerce Microservices & Gateway
+                                        </strong>
+                                        <span class="text-[11px] text-zinc-400 line-clamp-1" th:text="${p.shortDescription}">
+                                            Mô tả ngắn dự án
+                                        </span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <span class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono"
+                                      th:classappend="${p.type == 'PERSONAL'} ? 'text-emerald-300' : 'text-blue-300'"
+                                      th:text="${p.type == 'PERSONAL' ? 'Cá nhân' : 'Dự án Nhóm'}">
+                                    Cá nhân
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <p class="text-white font-medium text-[11px]" th:text="${p.role}">Lead Backend Dev</p>
+                                <p class="text-zinc-500 font-mono text-[10px]" th:text="${p.timeframe}">01/2026 – 04/2026</p>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex flex-wrap gap-1" th:if="${p.tags != null && !p.tags.isEmpty()}">
+                                    <span th:each="tag : ${#strings.arraySplit(p.tags, ',')}"
+                                          class="px-1.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-300"
+                                          th:text="${#strings.trim(tag)}">
+                                        Spring Boot
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span th:if="${p.status == 'ACTIVE'}"
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-[10px] font-mono text-emerald-400">
+                                    <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
+                                    <span>Active</span>
+                                </span>
+                                <span th:unless="${p.status == 'ACTIVE'}"
+                                    class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-500">
+                                    <span>Hidden</span>
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center space-x-1 font-mono">
+                                <button type="button"
+                                    class="btn-view px-2 py-1 rounded text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                                    th:data-id="${p.id}"
+                                    th:data-title="${p.title}"
+                                    th:data-type="${p.type}"
+                                    th:data-role="${p.role}"
+                                    th:data-time="${p.timeframe}"
+                                    th:data-cover="${p.coverImage}"
+                                    th:data-video="${p.videoUrl}"
+                                    th:data-github="${p.githubUrl}"
+                                    th:data-tags="${p.tags}"
+                                    th:data-desc="${p.shortDescription}"
+                                    th:data-features="${p.features}"
+                                    th:data-lessons="${p.lessonsLearned}"
+                                    th:data-challenges="${p.challenges}"
+                                    th:data-order="${p.orderIndex}"
+                                    th:data-status="${p.status}">
+                                    Xem
+                                </button>
+                                <button type="button"
+                                    class="btn-edit px-2 py-1 rounded text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                                    th:data-id="${p.id}"
+                                    th:data-title="${p.title}"
+                                    th:data-type="${p.type}"
+                                    th:data-role="${p.role}"
+                                    th:data-time="${p.timeframe}"
+                                    th:data-cover="${p.coverImage}"
+                                    th:data-video="${p.videoUrl}"
+                                    th:data-github="${p.githubUrl}"
+                                    th:data-tags="${p.tags}"
+                                    th:data-desc="${p.shortDescription}"
+                                    th:data-features="${p.features}"
+                                    th:data-lessons="${p.lessonsLearned}"
+                                    th:data-challenges="${p.challenges}"
+                                    th:data-order="${p.orderIndex}"
+                                    th:data-status="${p.status}">
+                                    Sửa
+                                </button>
+                                <form th:action="@{/admin/projects/delete/{id}(id=${p.id})}" method="POST" class="inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa dự án này? Ảnh bìa trên Cloudinary cũng sẽ được xóa.');">
+                                    <button type="submit"
+                                        class="px-2 py-1 rounded text-red-400 hover:text-red-300 bg-zinc-900 hover:bg-red-950/60 border border-zinc-800 hover:border-red-800 transition-colors">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${projects.empty}">
+                            <td colspan="7" class="py-8 text-center text-zinc-500 font-mono text-xs">
+                                Không tìm thấy dự án nào.
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang (Pagination 10 dự án/trang) -->
+            <div class="px-4 py-3 bg-zinc-900/50 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
+                <div>
+                    HIỂN THỊ <span class="text-white font-bold" th:text="${projects.numberOfElements}">0</span> / 
+                    <span class="text-white font-bold" th:text="${projects.totalElements}">0</span> DỰ ÁN
+                    (TRANG <span class="text-white font-bold" th:text="${projects.totalPages > 0 ? projects.number + 1 : 1}">1</span> / <span th:text="${projects.totalPages > 0 ? projects.totalPages : 1}">1</span>)
+                </div>
+                <div th:if="${projects.totalPages > 1}" class="flex items-center gap-1">
+                    <a th:href="@{/admin/projects(page=${projects.number - 1}, type=${selectedType}, search=${search})}"
+                       th:classappend="${projects.first} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        ← Trước
+                    </a>
+                    <th:block th:each="i : ${#numbers.sequence(0, projects.totalPages - 1)}">
+                        <a th:href="@{/admin/projects(page=${i}, type=${selectedType}, search=${search})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == projects.number} ? 'bg-white text-black font-bold' : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'"
+                           class="px-3 py-1.5 rounded-lg transition-colors">
+                            1
+                        </a>
+                    </th:block>
+                    <a th:href="@{/admin/projects(page=${projects.number + 1}, type=${selectedType}, search=${search})}"
+                       th:classappend="${projects.last} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        Sau →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Project Modal (Thêm mới / Cập nhật) -->
+        <div id="project-modal"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div
+                class="w-full max-w-3xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <div class="space-y-1">
+                        <h2 id="modal-title" class="text-lg font-bold text-white tracking-tight">
+                            Thêm dự án mới
+                        </h2>
+                        <p class="text-xs text-zinc-400 font-sans">
+                            Cấu hình thông số dự án, ảnh bìa Cloudinary, video YouTube và nội dung chuyên sâu
+                        </p>
+                    </div>
+                    <button type="button" id="btn-close-modal"
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <form id="project-form" th:action="@{/admin/projects/save}" method="POST" enctype="multipart/form-data" class="space-y-5 text-xs">
+
+                    <input type="hidden" id="project-id" name="id">
+
+                    <!-- Thông tin cơ bản -->
+                    <div class="space-y-3 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800">
+                        <h3 class="font-mono text-xs font-bold text-white uppercase">// THÔNG TIN CƠ BẢN</h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1 sm:col-span-2">
+                                <label for="project-title" class="block font-mono text-zinc-300 font-medium">
+                                    TIÊU ĐỀ DỰ ÁN <span class="text-white font-bold">*</span>
+                                </label>
+                                <input type="text" id="project-title" name="title" required
+                                    placeholder="vd: E-Commerce Microservices & Payment Gateway Platform"
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="project-type" class="block font-mono text-zinc-300 font-medium">
+                                    KIỂU DỰ ÁN <span class="text-white font-bold">*</span>
+                                </label>
+                                <select id="project-type" name="type" required
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 font-sans focus:outline-none focus:border-white transition-colors">
+                                    <option value="PERSONAL">Dự án Cá nhân</option>
+                                    <option value="TEAM">Dự án Nhóm</option>
+                                </select>
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="project-role" class="block font-mono text-zinc-300 font-medium">
+                                    VAI TRÒ CỦA TÔI <span class="text-white font-bold">*</span>
+                                </label>
+                                <input type="text" id="project-role" name="role" required
+                                    placeholder="vd: Lead Backend Developer"
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="project-time" class="block font-mono text-zinc-300 font-medium">
+                                    THỜI GIAN THỰC HIỆN
+                                </label>
+                                <input type="text" id="project-time" name="timeframe" placeholder="vd: 01/2026 – 04/2026"
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors">
+                            </div>
+
+                            <div class="space-y-1">
+                                <label for="project-github" class="block font-mono text-zinc-300 font-medium">
+                                    LINK GITHUB REPO
+                                </label>
+                                <input type="url" id="project-github" name="githubUrl"
+                                    placeholder="https://github.com/ternal-qtri/..."
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hình ảnh Cloudinary & Video YouTube -->
+                    <div class="space-y-3 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800">
+                        <h3 class="font-mono text-xs font-bold text-white uppercase">// HÌNH ẢNH CLOUDINARY & VIDEO YOUTUBE</h3>
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1 sm:col-span-2">
+                                <label for="cover-file-input" class="block font-mono text-zinc-300 font-medium">
+                                    ẢNH BÌA DỰ ÁN (TẢI LÊN CLOUDINARY) <span id="cover-required-indicator" class="text-white font-bold">*</span>
+                                </label>
+                                <input type="file" id="cover-file-input" name="coverImageFile" accept="image/*"
+                                    class="w-full px-3.5 py-2 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-300 text-xs font-mono focus:outline-none focus:border-white transition-colors file:mr-3 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-white file:text-black hover:file:bg-zinc-200 cursor-pointer">
+                                <p class="text-[11px] text-zinc-500 font-mono">Tự động tối ưu hóa và lưu trữ tại Cloudinary. Tỉ lệ chuẩn 16:9 hoặc 1919×969.</p>
+
+                                <!-- Preview ảnh hiện tại / ảnh mới -->
+                                <div id="cover-preview-wrapper" class="hidden mt-2">
+                                    <span class="text-[10px] font-mono text-zinc-400 block mb-1">// XEM TRƯỚC ẢNH BÌA:</span>
+                                    <div class="w-48 aspect-[1919/969] rounded bg-black border border-zinc-800 overflow-hidden">
+                                        <img id="cover-preview-img" src="" alt="Preview" class="w-full h-full object-cover">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="space-y-1 sm:col-span-2">
+                                <label for="project-video" class="block font-mono text-zinc-300 font-medium">
+                                    LINK VIDEO DEMO YOUTUBE
+                                </label>
+                                <input type="text" id="project-video" name="videoUrl"
+                                    placeholder="vd: https://www.youtube.com/watch?v=... hoặc https://youtu.be/..."
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors">
+                                <p class="text-[11px] text-zinc-500 font-mono">Hệ thống tự động chuẩn hóa mọi link YouTube thành định dạng nhúng Embed để xem trực tiếp.</p>
+                            </div>
+
+                            <div class="space-y-1 sm:col-span-2">
+                                <label for="project-tags" class="block font-mono text-zinc-300 font-medium">
+                                    CÁC CÔNG NGHỆ SỬ DỤNG (CÁCH NHAU BẰNG DẤU PHẨY)
+                                </label>
+                                <input type="text" id="project-tags" name="tags"
+                                    placeholder="Spring Boot, MySQL, React"
+                                    class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors">
+                                <p class="text-[11px] text-zinc-500 font-mono">Lưu theo cấu trúc: "Spring Boot, MySQL, React" để hỗ trợ cắt tag linh hoạt.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Nội dung chuyên sâu -->
+                    <div class="space-y-3 bg-zinc-900/40 p-4 rounded-xl border border-zinc-800">
+                        <h3 class="font-mono text-xs font-bold text-white uppercase">// NỘI DUNG CHUYÊN SÂU</h3>
+
+                        <div class="space-y-1">
+                            <label for="project-desc" class="block font-mono text-zinc-300 font-medium">
+                                MÔ TẢ NGẮN (HIỂN THỊ CARD CLIENT)
+                            </label>
+                            <textarea id="project-desc" name="shortDescription" rows="2"
+                                placeholder="Tóm tắt ngắn 1-2 dòng về bài toán và giải pháp kỹ thuật..."
+                                class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="project-features" class="block font-mono text-zinc-300 font-medium">
+                                01. CÁC CHỨC NĂNG CHÍNH (DẠNG ĐẦU DÒNG)
+                            </label>
+                            <textarea id="project-features" name="features" rows="3"
+                                placeholder="• Xác thực & phân quyền: Spring Security, JWT, OAuth2&#10;• Quản lý sản phẩm và giỏ hàng phân tán với Redis..."
+                                class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="project-lessons" class="block font-mono text-zinc-300 font-medium">
+                                02. BÀI HỌC KINH NGHIỆM THU ĐƯỢC (DẠNG ĐẦU DÒNG)
+                            </label>
+                            <textarea id="project-lessons" name="lessonsLearned" rows="3"
+                                placeholder="• Nắm vững kiến trúc Microservices và RESTful API&#10;• Thành thạo cấu hình Spring Security Filter Chain..."
+                                class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors resize-y"></textarea>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label for="project-challenges" class="block font-mono text-zinc-300 font-medium">
+                                03. KHÓ KHĂN & CÁCH GIẢI QUYẾT (DẠNG ĐẦU DÒNG)
+                            </label>
+                            <textarea id="project-challenges" name="challenges" rows="3"
+                                placeholder="• Xung đột tồn kho -> Xử lý bằng kiểm tra nghiêm ngặt & Transaction Rollback&#10;• Độ trễ truy vấn -> Áp dụng chỉ mục B-Tree & Redis Caching..."
+                                class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors resize-y"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between pt-1">
+                        <div class="flex items-center gap-2">
+                            <label for="project-order" class="font-mono text-zinc-300">THỨ TỰ:</label>
+                            <input type="number" id="project-order" name="orderIndex" min="1" value="1"
+                                class="w-20 px-3 py-1.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 font-mono focus:outline-none focus:border-white transition-colors">
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="project-status" name="isVisible" value="true" checked
+                                class="w-4 h-4 rounded bg-[#09090B] border border-zinc-800 text-white focus:ring-0 focus:ring-offset-0 accent-white cursor-pointer">
+                            <label for="project-status" class="text-zinc-300 cursor-pointer select-none font-sans">
+                                Hiển thị trên Portfolio
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="pt-4 flex items-center justify-end gap-3 border-t border-zinc-800">
+                        <button type="button" id="btn-cancel-modal"
+                            class="px-4 py-2.5 rounded-lg text-xs font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors">
+                            Hủy bỏ
+                        </button>
+                        <button type="submit" id="btn-submit-modal"
+                            class="px-6 py-2.5 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+                            Lưu dự án
+                        </button>
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- View Detail Modal (Xem chi tiết dự án & Video demo) -->
+        <div id="view-detail-modal"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div
+                class="w-full max-w-3xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                            <span class="font-mono text-xs text-zinc-400 uppercase" id="view-type-badge">CÁ NHÂN</span>
+                        </div>
+                        <h2 id="view-title" class="text-lg font-bold text-white tracking-tight">
+                            Tiêu đề dự án
+                        </h2>
+                    </div>
+                    <button type="button" id="btn-close-view-modal"
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <!-- Video embed hoặc Ảnh bìa -->
+                <div class="space-y-3">
+                    <div id="view-video-wrapper" class="w-full aspect-video rounded-xl bg-black border border-zinc-800 overflow-hidden hidden">
+                        <iframe id="view-video-iframe" class="w-full h-full" src="" title="YouTube video player" frameborder="0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    </div>
+                    <div id="view-cover-wrapper" class="w-full aspect-[1919/969] rounded-xl bg-black border border-zinc-800 overflow-hidden">
+                        <img id="view-cover-img" src="" alt="Project Cover" class="w-full h-full object-cover">
+                    </div>
+                </div>
+
+                <!-- Meta info -->
+                <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800 space-y-2 text-xs font-mono">
+                    <div class="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+                        <span class="text-zinc-500">VAI TRÒ:</span>
+                        <span class="text-white font-bold" id="view-role">Lead Backend Dev</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+                        <span class="text-zinc-500">THỜI GIAN:</span>
+                        <span class="text-zinc-300" id="view-time">01/2026 – 04/2026</span>
+                    </div>
+                    <div class="flex justify-between items-center" id="view-github-row">
+                        <span class="text-zinc-500">GITHUB REPO:</span>
+                        <a href="#" id="view-github-link" target="_blank" class="text-emerald-400 hover:underline truncate">Link Repo</a>
+                    </div>
+                </div>
+
+                <!-- Tags -->
+                <div class="space-y-1.5">
+                    <span class="text-xs font-mono text-zinc-500 uppercase">// CÔNG NGHỆ ÁP DỤNG:</span>
+                    <div id="view-tags-container" class="flex flex-wrap gap-1.5"></div>
+                </div>
+
+                <!-- Mô tả ngắn -->
+                <div class="space-y-1.5">
+                    <span class="text-xs font-mono text-zinc-500 uppercase">// MÔ TẢ TỔNG QUAN:</span>
+                    <p class="text-xs sm:text-sm text-zinc-300 leading-relaxed font-sans" id="view-desc"></p>
+                </div>
+
+                <!-- Features -->
+                <div class="space-y-1.5" id="view-features-box">
+                    <span class="text-xs font-mono text-zinc-500 uppercase">// CHỨC NĂNG CHÍNH:</span>
+                    <div class="bg-[#09090B] border border-zinc-800 rounded-xl p-3.5 text-xs text-zinc-300 font-mono whitespace-pre-wrap leading-relaxed" id="view-features"></div>
+                </div>
+
+                <!-- Lessons & Challenges -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div class="space-y-1.5" id="view-lessons-box">
+                        <span class="text-xs font-mono text-zinc-500 uppercase">// BÀI HỌC KINH NGHIỆM:</span>
+                        <div class="bg-[#09090B] border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300 font-mono whitespace-pre-wrap leading-relaxed" id="view-lessons"></div>
+                    </div>
+                    <div class="space-y-1.5" id="view-challenges-box">
+                        <span class="text-xs font-mono text-zinc-500 uppercase">// KHÓ KHĂN & GIẢI QUYẾT:</span>
+                        <div class="bg-[#09090B] border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300 font-mono whitespace-pre-wrap leading-relaxed" id="view-challenges"></div>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end border-t border-zinc-800">
+                    <button type="button" id="btn-close-view-bottom"
+                        class="px-5 py-2 rounded-lg text-xs font-medium text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors">
+                        Đóng
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            // Modal Thêm mới / Cập nhật
+            const modal = document.getElementById('project-modal');
+            const btnOpenAdd = document.getElementById('btn-open-add-modal');
+            const btnClose = document.getElementById('btn-close-modal');
+            const btnCancel = document.getElementById('btn-cancel-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const btnSubmit = document.getElementById('btn-submit-modal');
+            const coverRequired = document.getElementById('cover-required-indicator');
+
+            const pId = document.getElementById('project-id');
+            const pTitle = document.getElementById('project-title');
+            const pType = document.getElementById('project-type');
+            const pRole = document.getElementById('project-role');
+            const pTime = document.getElementById('project-time');
+            const pGithub = document.getElementById('project-github');
+            const pVideo = document.getElementById('project-video');
+            const pTags = document.getElementById('project-tags');
+            const pDesc = document.getElementById('project-desc');
+            const pFeatures = document.getElementById('project-features');
+            const pLessons = document.getElementById('project-lessons');
+            const pChallenges = document.getElementById('project-challenges');
+            const pOrder = document.getElementById('project-order');
+            const pStatus = document.getElementById('project-status');
+            const coverFileInput = document.getElementById('cover-file-input');
+            const coverPreviewWrapper = document.getElementById('cover-preview-wrapper');
+            const coverPreviewImg = document.getElementById('cover-preview-img');
+
+            // Live preview cho file ảnh
+            if (coverFileInput) {
+                coverFileInput.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(evt) {
+                            coverPreviewImg.src = evt.target.result;
+                            coverPreviewWrapper.classList.remove('hidden');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+
+            function openEditModal(data) {
+                modalTitle.textContent = 'Cập nhật thông tin dự án';
+                btnSubmit.textContent = 'Cập nhật thay đổi';
+                coverRequired.classList.add('hidden'); // Khi sửa không bắt buộc chọn ảnh mới
+                coverFileInput.required = false;
+
+                pId.value = data.id || '';
+                pTitle.value = data.title || '';
+                pType.value = data.type || 'PERSONAL';
+                pRole.value = data.role || '';
+                pTime.value = data.time || '';
+                pGithub.value = data.github || '';
+                pVideo.value = data.video || '';
+                pTags.value = data.tags || '';
+                pDesc.value = data.desc || '';
+                pFeatures.value = data.features || '';
+                pLessons.value = data.lessons || '';
+                pChallenges.value = data.challenges || '';
+                pOrder.value = data.order || '1';
+                pStatus.checked = (data.status === 'ACTIVE');
+
+                if (data.cover) {
+                    coverPreviewImg.src = data.cover;
+                    coverPreviewWrapper.classList.remove('hidden');
+                } else {
+                    coverPreviewWrapper.classList.add('hidden');
+                }
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function openAddModal() {
+                modalTitle.textContent = 'Thêm dự án mới';
+                btnSubmit.textContent = 'Lưu dự án';
+                coverRequired.classList.remove('hidden');
+                coverFileInput.required = true; // Bắt buộc khi tạo mới
+
+                document.getElementById('project-form').reset();
+                pId.value = '';
+                pOrder.value = '1';
+                pStatus.checked = true;
+                coverPreviewWrapper.classList.add('hidden');
+                coverPreviewImg.src = '';
+
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+
+            if (btnOpenAdd) btnOpenAdd.addEventListener('click', openAddModal);
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+
+            document.querySelectorAll('.btn-edit').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    openEditModal(e.currentTarget.dataset);
+                });
+            });
+
+            if (modal) {
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) closeModal();
+                });
+            }
+
+            // View Details Modal
+            const viewModal = document.getElementById('view-detail-modal');
+            const btnCloseView = document.getElementById('btn-close-view-modal');
+            const btnCloseViewBottom = document.getElementById('btn-close-view-bottom');
+            const viewTitle = document.getElementById('view-title');
+            const viewTypeBadge = document.getElementById('view-type-badge');
+            const viewVideoWrapper = document.getElementById('view-video-wrapper');
+            const viewVideoIframe = document.getElementById('view-video-iframe');
+            const viewCoverWrapper = document.getElementById('view-cover-wrapper');
+            const viewCoverImg = document.getElementById('view-cover-img');
+            const viewRole = document.getElementById('view-role');
+            const viewTime = document.getElementById('view-time');
+            const viewGithubRow = document.getElementById('view-github-row');
+            const viewGithubLink = document.getElementById('view-github-link');
+            const viewTagsContainer = document.getElementById('view-tags-container');
+            const viewDesc = document.getElementById('view-desc');
+            const viewFeatures = document.getElementById('view-features');
+            const viewLessons = document.getElementById('view-lessons');
+            const viewChallenges = document.getElementById('view-challenges');
+
+            function openViewModal(data) {
+                viewTitle.textContent = data.title || 'Chi tiết dự án';
+                viewTypeBadge.textContent = data.type === 'PERSONAL' ? 'DỰ ÁN CÁ NHÂN' : 'DỰ ÁN NHÓM';
+                viewRole.textContent = data.role || 'N/A';
+                viewTime.textContent = data.time || 'N/A';
+
+                // Video iframe
+                if (data.video && data.video.trim() !== '') {
+                    viewVideoIframe.src = data.video;
+                    viewVideoWrapper.classList.remove('hidden');
+                    viewCoverWrapper.classList.add('hidden');
+                } else {
+                    viewVideoIframe.src = '';
+                    viewVideoWrapper.classList.add('hidden');
+                    viewCoverWrapper.classList.remove('hidden');
+                    viewCoverImg.src = data.cover || '';
+                }
+
+                // GitHub
+                if (data.github && data.github.trim() !== '') {
+                    viewGithubLink.href = data.github;
+                    viewGithubLink.textContent = data.github;
+                    viewGithubRow.classList.remove('hidden');
+                } else {
+                    viewGithubRow.classList.add('hidden');
+                }
+
+                // Tags
+                viewTagsContainer.innerHTML = '';
+                if (data.tags) {
+                    data.tags.split(',').forEach(tag => {
+                        const trimmed = tag.trim();
+                        if (trimmed) {
+                            const badge = document.createElement('span');
+                            badge.className = 'px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-300';
+                            badge.textContent = trimmed;
+                            viewTagsContainer.appendChild(badge);
+                        }
+                    });
+                }
+
+                viewDesc.textContent = data.desc || 'Chưa có mô tả.';
+                viewFeatures.textContent = data.features || 'Chưa cập nhật.';
+                viewLessons.textContent = data.lessons || 'Chưa cập nhật.';
+                viewChallenges.textContent = data.challenges || 'Chưa cập nhật.';
+
+                viewModal.classList.remove('hidden');
+                viewModal.classList.add('flex');
+            }
+
+            function closeViewModal() {
+                viewModal.classList.add('hidden');
+                viewModal.classList.remove('flex');
+                viewVideoIframe.src = ''; // Dừng phát video
+            }
+
+            if (btnCloseView) btnCloseView.addEventListener('click', closeViewModal);
+            if (btnCloseViewBottom) btnCloseViewBottom.addEventListener('click', closeViewModal);
+
+            document.querySelectorAll('.btn-view').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    openViewModal(e.currentTarget.dataset);
+                });
+            });
+
+            if (viewModal) {
+                viewModal.addEventListener('click', (e) => {
+                    if (e.target === viewModal) closeViewModal();
+                });
+            }
+        </script>
+    </th:block>
+
+</body>
+</html>

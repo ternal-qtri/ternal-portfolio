@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{admin/layouts/layout}">
+<head>
+    <title>Quản Lý Tin Nhắn Liên Hệ | Ternal.dev Admin</title>
+</head>
+<body>
+
+    <div layout:fragment="content">
+
+        <!-- Top Action Bar & Header -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-zinc-800 pb-6">
+            <div>
+                <div
+                    class="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-400 bg-zinc-900 px-2.5 py-1 rounded border border-zinc-800 mb-2">
+                    <span>// DATABASE ENTITY: CONTACT_INBOX</span>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                    Quản lý tin nhắn liên hệ
+                </h1>
+                <p class="text-xs sm:text-sm text-zinc-400 mt-1 font-sans">
+                    Xem và phản hồi các tin nhắn, yêu cầu tuyển dụng và hợp tác kỹ thuật gửi từ trang Client.
+                </p>
+            </div>
+
+            <!-- Live Notification SLA Badge -->
+            <div
+                class="flex items-center gap-2 font-mono text-xs text-zinc-400 bg-[#121214] border border-zinc-800 px-3.5 py-2 rounded-xl self-start sm:self-auto shadow-sm">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>HỘP THƯ: <strong class="text-white">LIVE SYNC</strong></span>
+            </div>
+        </section>
+
+        <!-- Flash Messages Alert -->
+        <div th:if="${successMessage}" class="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                <span th:text="${successMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-emerald-400 hover:text-white">✕</button>
+        </div>
+        <div th:if="${errorMessage}" class="p-3.5 rounded-xl bg-red-950/60 border border-red-800 text-xs text-red-300 font-sans flex items-center justify-between shadow-sm">
+            <div class="flex items-center gap-2">
+                <span class="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+                <span th:text="${errorMessage}"></span>
+            </div>
+            <button type="button" onclick="this.parentElement.remove()" class="text-red-400 hover:text-white">✕</button>
+        </div>
+
+        <!-- Quick Metric Bento Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="bg-[#121214] border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-1 shadow-sm">
+                <span class="font-mono text-[10px] text-zinc-500 uppercase">// TỔNG SỐ TIN NHẮN</span>
+                <div class="flex items-baseline justify-between">
+                    <p class="text-2xl font-extrabold text-white font-mono" th:text="${totalCount < 10 ? '0' + totalCount : totalCount}">00</p>
+                    <span class="text-xs font-mono text-zinc-400">Total Inbox</span>
+                </div>
+            </div>
+
+            <div class="bg-[#121214] border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-1 shadow-sm">
+                <span class="font-mono text-[10px] text-emerald-500 uppercase">// CHƯA ĐỌC / CHỜ PHẢN HỒI</span>
+                <div class="flex items-baseline justify-between">
+                    <p class="text-2xl font-extrabold text-emerald-400 font-mono" th:text="${unreadCount < 10 ? '0' + unreadCount : unreadCount}">00</p>
+                    <span class="text-xs font-mono text-emerald-400/80">● Action Required</span>
+                </div>
+            </div>
+
+            <div class="bg-[#121214] border border-zinc-800 rounded-xl p-4 sm:p-5 space-y-1 shadow-sm">
+                <span class="font-mono text-[10px] text-zinc-500 uppercase">// ĐÃ PHẢN HỒI QUA EMAIL</span>
+                <div class="flex items-baseline justify-between">
+                    <p class="text-2xl font-extrabold text-zinc-200 font-mono" th:text="${repliedCount < 10 ? '0' + repliedCount : repliedCount}">00</p>
+                    <span class="text-xs font-mono text-zinc-400">Resolved</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bộ Lọc & Tìm Kiếm Tin Nhắn -->
+        <form th:action="@{/admin/contacts}" method="GET"
+              class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#121214] border border-zinc-800 p-3.5 rounded-xl">
+            <div class="flex items-center gap-2">
+                <label for="status-filter" class="text-xs font-mono text-zinc-400 whitespace-nowrap">
+                    TRẠNG THÁI:
+                </label>
+                <select id="status-filter" name="status" onchange="this.form.submit()"
+                    class="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:border-zinc-500 transition-colors cursor-pointer">
+                    <option value="ALL" th:selected="${selectedStatus == 'ALL'}" th:text="'Tất cả tin nhắn (' + ${totalCount} + ')'">Tất cả tin nhắn</option>
+                    <option value="UNREAD" th:selected="${selectedStatus == 'UNREAD'}" th:text="'Chưa đọc (' + ${unreadCount} + ')'">Chưa đọc</option>
+                    <option value="READ" th:selected="${selectedStatus == 'READ'}">Đã đọc</option>
+                    <option value="REPLIED" th:selected="${selectedStatus == 'REPLIED'}" th:text="'Đã phản hồi (' + ${repliedCount} + ')'">Đã phản hồi</option>
+                </select>
+            </div>
+
+            <div class="relative max-w-xs w-full">
+                <input type="text" name="search" th:value="${search}" placeholder="Tìm theo tên, email, tiêu đề..."
+                    class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-500 font-sans focus:outline-none focus:border-white transition-colors" />
+                <button type="submit" class="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono text-zinc-500 hover:text-white">↵ SEARCH</button>
+            </div>
+        </form>
+
+        <!-- Bảng danh sách tin nhắn liên hệ -->
+        <section class="bg-[#121214] border border-zinc-800 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table id="contacts-table" class="w-full text-left text-xs">
+                    <thead
+                        class="bg-zinc-900/80 border-b border-zinc-800 text-zinc-400 font-mono uppercase text-[11px]">
+                        <tr>
+                            <th scope="col" class="py-3.5 px-4 w-14 text-center">STT</th>
+                            <th scope="col" class="py-3.5 px-4 w-60">Người gửi & Email</th>
+                            <th scope="col" class="py-3.5 px-4 w-[220px]">
+                                Tiêu đề & Nội dung tóm tắt
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 w-36">Thời gian</th>
+                            <th scope="col" class="py-3.5 px-4 w-32 text-center">
+                                Trạng thái
+                            </th>
+                            <th scope="col" class="py-3.5 px-4 w-40 text-center">
+                                Hành động
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody id="contacts-tbody" class="divide-y divide-zinc-800/80 font-sans text-zinc-300">
+                        <tr th:each="msg, iterStat : ${contacts.content}"
+                            class="hover:bg-zinc-900/50 transition-colors contact-row"
+                            th:data-id="${msg.id}"
+                            th:data-status="${msg.status}">
+                            <td class="py-3.5 px-4 text-center font-mono text-zinc-500 font-semibold"
+                                th:text="${(contacts.number * 10) + iterStat.count < 10 ? '0' + ((contacts.number * 10) + iterStat.count) : (contacts.number * 10) + iterStat.count}">
+                                01
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <div class="flex items-center gap-2.5">
+                                    <div class="w-7 h-7 rounded-full bg-emerald-500 text-black flex items-center justify-center font-bold text-xs font-mono flex-shrink-0"
+                                         th:text="${msg.senderName != null && !msg.senderName.isEmpty() ? #strings.toUpperCase(#strings.substring(msg.senderName, 0, 1)) : 'U'}">
+                                        F
+                                    </div>
+                                    <div class="min-w-0">
+                                        <strong class="text-white block truncate leading-snug" th:text="${msg.senderName}">HR Talent Team</strong>
+                                        <a th:href="'mailto:' + ${msg.email}" th:text="${msg.email}"
+                                            class="text-[11px] text-zinc-400 font-mono hover:underline block truncate">talent@fpt.com</a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="py-3.5 px-4">
+                                <strong class="text-white block truncate" th:text="${msg.subject != null && !msg.subject.isEmpty() ? msg.subject : 'Không có tiêu đề'}">
+                                    Cơ hội việc làm Backend Java Developer
+                                </strong>
+                                <p class="text-[11px] text-zinc-400 line-clamp-1" th:text="${msg.message}">
+                                    Nội dung tóm tắt...
+                                </p>
+                            </td>
+                            <td class="py-3.5 px-4 font-mono text-[11px] text-zinc-400"
+                                th:text="${msg.createdAt != null ? #temporals.format(msg.createdAt, 'HH:mm - dd/MM/yyyy') : 'N/A'}">
+                                10:45 - Hôm nay
+                            </td>
+                            <td class="py-3.5 px-4 text-center">
+                                <span th:if="${msg.status == 'UNREAD'}"
+                                    class="status-badge inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-800 text-[10px] font-mono text-emerald-400">
+                                    <span class="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
+                                    <span>Chưa đọc</span>
+                                </span>
+                                <span th:if="${msg.status == 'READ'}"
+                                    class="status-badge inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400">
+                                    <span>Đã đọc</span>
+                                </span>
+                                <span th:if="${msg.status == 'REPLIED'}"
+                                    class="status-badge inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-sky-950/80 border border-sky-800 text-[10px] font-mono text-sky-400">
+                                    <span>Đã phản hồi</span>
+                                </span>
+                            </td>
+                            <td class="py-3.5 px-4 text-center space-x-1 font-mono">
+                                <button type="button"
+                                    class="btn-view-msg px-2.5 py-1 rounded text-zinc-200 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors"
+                                    th:data-id="${msg.id}"
+                                    th:data-sender="${msg.senderName}"
+                                    th:data-email="${msg.email}"
+                                    th:data-subject="${msg.subject}"
+                                    th:data-time="${msg.createdAt != null ? #temporals.format(msg.createdAt, 'HH:mm - dd/MM/yyyy') : 'N/A'}"
+                                    th:data-status="${msg.status}"
+                                    th:data-message="${msg.message}">
+                                    Xem
+                                </button>
+                                <a th:href="'mailto:' + ${msg.email} + '?subject=Re: ' + ${msg.subject}"
+                                    class="inline-block px-2.5 py-1 rounded text-black bg-white hover:bg-zinc-200 font-semibold transition-colors">
+                                    Trả lời
+                                </a>
+                                <form th:action="@{/admin/contacts/delete/{id}(id=${msg.id})}" method="POST" class="inline"
+                                      onsubmit="return confirm('Bạn có chắc chắn muốn xóa tin nhắn liên hệ này không?');">
+                                    <button type="submit"
+                                        class="px-2 py-1 rounded text-red-400 hover:text-red-300 bg-zinc-900 hover:bg-red-950/60 border border-zinc-800 hover:border-red-800 transition-colors">
+                                        Xóa
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+
+                        <tr th:if="${contacts.empty}">
+                            <td colspan="6" class="py-8 text-center text-zinc-500 font-mono text-xs">
+                                Không tìm thấy tin nhắn liên hệ nào.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Phân trang (Pagination 10 mails/trang) -->
+            <div class="px-4 py-3 bg-zinc-900/50 border-t border-zinc-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-zinc-400">
+                <div>
+                    HIỂN THỊ <span class="text-white font-bold" th:text="${contacts.numberOfElements}">0</span> / 
+                    <span class="text-white font-bold" th:text="${contacts.totalElements}">0</span> TIN NHẮN
+                    (TRANG <span class="text-white font-bold" th:text="${contacts.totalPages > 0 ? contacts.number + 1 : 1}">1</span> / <span th:text="${contacts.totalPages > 0 ? contacts.totalPages : 1}">1</span>)
+                </div>
+                <div th:if="${contacts.totalPages > 1}" class="flex items-center gap-1">
+                    <a th:href="@{/admin/contacts(page=${contacts.number - 1}, status=${selectedStatus}, search=${search})}"
+                       th:classappend="${contacts.first} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        ← Trước
+                    </a>
+                    <th:block th:each="i : ${#numbers.sequence(0, contacts.totalPages - 1)}">
+                        <a th:href="@{/admin/contacts(page=${i}, status=${selectedStatus}, search=${search})}"
+                           th:text="${i + 1}"
+                           th:classappend="${i == contacts.number} ? 'bg-white text-black font-bold' : 'bg-zinc-900 text-zinc-400 hover:text-white border border-zinc-800'"
+                           class="px-3 py-1.5 rounded-lg transition-colors">
+                            1
+                        </a>
+                    </th:block>
+                    <a th:href="@{/admin/contacts(page=${contacts.number + 1}, status=${selectedStatus}, search=${search})}"
+                       th:classappend="${contacts.last} ? 'pointer-events-none opacity-40' : ''"
+                       class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 hover:text-white hover:border-zinc-700 transition-colors">
+                        Sau →
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Message Detail Modal -->
+        <div id="contact-modal"
+            class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+            <div
+                class="w-full max-w-xl bg-[#121214] border border-zinc-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+                <div class="flex items-center justify-between border-b border-zinc-800 pb-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <span class="font-mono text-xs text-zinc-400 uppercase" id="modal-msg-id">// TIN NHẮN #MSG-01</span>
+                        </div>
+                        <h2 class="text-lg font-bold text-white tracking-tight" id="modal-msg-subject">
+                            Tiêu đề tin nhắn
+                        </h2>
+                    </div>
+                    <button type="button" id="btn-close-modal"
+                        class="w-8 h-8 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center transition-colors">
+                        ✕
+                    </button>
+                </div>
+
+                <div class="bg-zinc-900/60 p-4 rounded-xl border border-zinc-800 space-y-2.5 text-xs font-mono">
+                    <div class="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+                        <span class="text-zinc-500">NGƯỜI GỬI:</span>
+                        <span class="text-white font-bold" id="modal-msg-sender">HR Talent Team</span>
+                    </div>
+                    <div class="flex justify-between items-center border-b border-zinc-800/80 pb-2">
+                        <span class="text-zinc-500">EMAIL:</span>
+                        <a href="#" class="text-zinc-200 hover:underline font-medium"
+                            id="modal-msg-email">talent@fpt.com</a>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-zinc-500">THỜI GIAN NHẬN:</span>
+                        <span class="text-zinc-400" id="modal-msg-time">10:45 - 28/08/2026</span>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <h3 class="font-mono text-xs font-bold text-white uppercase">
+                        // NỘI DUNG THƯ
+                    </h3>
+                    <div class="bg-[#09090B] border border-zinc-800 rounded-xl p-4 text-xs sm:text-sm text-zinc-300 whitespace-pre-wrap leading-relaxed min-h-[120px] font-sans"
+                        id="modal-msg-content">
+                        Nội dung bức thư...
+                    </div>
+                </div>
+
+                <div class="pt-4 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-800">
+                    <form id="form-mark-replied" method="POST">
+                        <button type="submit" id="btn-mark-replied"
+                            class="px-3.5 py-2 rounded-lg text-xs font-mono text-zinc-300 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 transition-colors">
+                            ✓ Đánh dấu đã phản hồi
+                        </button>
+                    </form>
+
+                    <div class="flex items-center gap-2">
+                        <button type="button" id="btn-close-modal-bottom"
+                            class="px-4 py-2 rounded-lg text-xs font-medium text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 transition-colors">
+                            Đóng
+                        </button>
+                        <a href="#" id="btn-reply-email"
+                            class="inline-flex items-center gap-1.5 px-5 py-2 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+                            <span>Soạn Email phản hồi</span>
+                            <span>↗</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <th:block layout:fragment="scripts">
+        <script>
+            const modal = document.getElementById("contact-modal");
+            const btnClose = document.getElementById("btn-close-modal");
+            const btnCloseBottom = document.getElementById("btn-close-modal-bottom");
+            const formMarkReplied = document.getElementById("form-mark-replied");
+
+            const modalId = document.getElementById("modal-msg-id");
+            const modalSubject = document.getElementById("modal-msg-subject");
+            const modalSender = document.getElementById("modal-msg-sender");
+            const modalEmail = document.getElementById("modal-msg-email");
+            const modalTime = document.getElementById("modal-msg-time");
+            const modalContent = document.getElementById("modal-msg-content");
+            const btnReplyEmail = document.getElementById("btn-reply-email");
+
+            function openMessageModal(data) {
+                modalId.textContent = `// TIN NHẮN #MSG-0${data.id || "1"}`;
+                modalSubject.textContent = data.subject || "Không có tiêu đề";
+                modalSender.textContent = data.sender || "";
+                modalEmail.textContent = data.email || "";
+                modalEmail.href = `mailto:${data.email}`;
+                modalTime.textContent = data.time || "";
+                modalContent.textContent = data.message || "";
+                btnReplyEmail.href = `mailto:${data.email}?subject=Re: ${encodeURIComponent(data.subject || "")}`;
+
+                if (formMarkReplied) {
+                    formMarkReplied.action = `/admin/contacts/mark-replied/${data.id}`;
+                    if (data.status === 'REPLIED') {
+                        formMarkReplied.style.display = 'none';
+                    } else {
+                        formMarkReplied.style.display = 'block';
+                    }
+                }
+
+                // Nếu là tin nhắn UNREAD, gọi background API chuyển sang READ và cập nhật giao diện
+                if (data.status === 'UNREAD') {
+                    fetch(`/admin/contacts/mark-read/${data.id}`, { method: 'POST' })
+                        .then(r => r.json())
+                        .then(res => {
+                            if (res.success) {
+                                const row = document.querySelector(`.contact-row[data-id="${data.id}"]`);
+                                if (row) {
+                                    const badge = row.querySelector('.status-badge');
+                                    if (badge) {
+                                        badge.className = 'status-badge inline-flex items-center gap-1 px-2.5 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400';
+                                        badge.innerHTML = '<span>Đã đọc</span>';
+                                    }
+                                    row.dataset.status = 'READ';
+                                }
+                            }
+                        })
+                        .catch(err => console.warn('Cannot mark read:', err));
+                }
+
+                modal.classList.remove("hidden");
+                modal.classList.add("flex");
+            }
+
+            function closeMessageModal() {
+                modal.classList.add("hidden");
+                modal.classList.remove("flex");
+            }
+
+            if (btnClose) btnClose.addEventListener("click", closeMessageModal);
+            if (btnCloseBottom) btnCloseBottom.addEventListener("click", closeMessageModal);
+
+            document.querySelectorAll(".btn-view-msg").forEach((btn) => {
+                btn.addEventListener("click", (e) => {
+                    const d = e.currentTarget.dataset;
+                    openMessageModal(d);
+                });
+            });
+
+            if (modal) {
+                modal.addEventListener("click", (e) => {
+                    if (e.target === modal) closeMessageModal();
+                });
+            }
+        </script>
+    </th:block>
+
+</body>
+</html>

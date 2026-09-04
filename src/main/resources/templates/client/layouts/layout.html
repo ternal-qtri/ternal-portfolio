@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Nguyễn Quốc Trí (Ternal) | Backend Developer</title>
+    <meta name="description"
+        content="Portfolio cá nhân của Nguyễn Quốc Trí (Ternal) - Lập trình viên Backend chuyên sâu về hệ sinh thái Java, Spring Boot và kiến trúc hệ thống quy mô lớn.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            black: '#000000',
+                            canvas: '#09090B',
+                            surface: '#121214',
+                            sub: '#18181B',
+                            border: '#27272A',
+                            borderHover: '#52525B',
+                            accent: '#10B981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script th:src="@{/assets/js/showAlert.js}"></script>
+
+    <style>
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #09090B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3F3F46;
+        }
+
+        .bg-tech-grid {
+            background-size: 32px 32px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        }
+
+        .cube-container {
+            perspective: 800px;
+        }
+
+        .wireframe-cube,
+        .cube {
+            width: 44px;
+            height: 44px;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(20deg) rotateY(35deg);
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 44px;
+            height: 44px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(18, 18, 20, 0.4);
+        }
+
+        .cube-front {
+            transform: translateZ(22px);
+        }
+
+        .cube-back {
+            transform: rotateY(180deg) translateZ(22px);
+        }
+
+        .cube-right {
+            transform: rotateY(90deg) translateZ(22px);
+        }
+
+        .cube-left {
+            transform: rotateY(-90deg) translateZ(22px);
+        }
+
+        .cube-top {
+            transform: rotateX(90deg) translateZ(22px);
+        }
+
+        .cube-bottom {
+            transform: rotateX(-90deg) translateZ(22px);
+        }
+
+        /* SPA Smooth Page Transition (Opacity only, NO transform to avoid breaking fixed HUD) */
+        #loading-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #10B981, #ffffff, #10B981);
+            background-size: 200% 100%;
+            z-index: 99999;
+            opacity: 0;
+            pointer-events-none;
+            transition: opacity 150ms ease;
+        }
+        .htmx-request#loading-bar,
+        body.htmx-request #loading-bar {
+            opacity: 1;
+            animation: loadingBarGlow 1.2s infinite ease-in-out;
+        }
+        @keyframes loadingBarGlow {
+            0% { background-position: 100% 0; }
+            100% { background-position: -100% 0; }
+        }
+        .htmx-swapping #main-content {
+            opacity: 0.3;
+            transition: opacity 120ms ease-out;
+        }
+        #main-content {
+            transition: opacity 180ms ease-in;
+        }
+
+        .notyf {
+            z-index: 999999 !important;
+        }
+        .htmx-request.htmx-indicator,
+        .htmx-request .htmx-indicator {
+            display: inline-flex !important;
+        }
+        .htmx-request .htmx-indicator-hide {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body hx-boost="true"
+      hx-select="#main-content"
+      hx-target="#main-content"
+      hx-swap="innerHTML show:window:top"
+      class="bg-[#09090B] text-zinc-100 font-sans antialiased selection:bg-white selection:text-black min-h-screen flex flex-col justify-between relative overflow-x-hidden">
+
+    <div id="loading-bar"></div>
+
+    <div class="fixed inset-0 bg-tech-grid opacity-50 pointer-events-none -z-10"></div>
+
+    <div th:replace="~{client/layouts/navbar :: navbar}"></div>
+
+    <div id="main-content" class="flex-grow flex flex-col">
+        <div layout:fragment="content"></div>
+    </div>
+
+    <div th:replace="~{client/layouts/footer :: footer}"></div>
+
+    <script th:src="@{/assets/js/main.js}"></script>
+
+    <th:block layout:fragment="scripts"></th:block>
+
+</body>
+
+</html>

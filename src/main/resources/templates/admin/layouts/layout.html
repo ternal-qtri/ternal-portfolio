@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">Ternal.dev Admin Console</title>
+    <meta name="description" content="Trang quản trị Ternal.dev Control Panel.">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/notyf/3.10.0/notyf.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            black: '#000000',
+                            canvas: '#09090B',
+                            surface: '#121214',
+                            sub: '#18181B',
+                            border: '#27272A',
+                            borderHover: '#52525B',
+                            accent: '#10B981',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Thanh cuộn tối giản */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #09090B;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #52525B;
+        }
+    </style>
+</head>
+
+<body class="bg-[#09090B] text-zinc-100 font-sans antialiased selection:bg-white selection:text-black min-h-screen flex flex-col md:flex-row">
+
+    <aside th:replace="~{admin/layouts/sidebar :: sidebar}"></aside>
+
+    <main layout:fragment="content" class="flex-grow p-4 sm:p-6 md:p-8 space-y-8 overflow-y-auto">
+    </main>
+
+    <script th:src="@{/assets/js/main.js}"></script>
+    <script th:src="@{/assets/js/showAlert.js}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggleBtn = document.getElementById('admin-mobile-toggle');
+            const adminNav = document.getElementById('admin-nav');
+            if (toggleBtn && adminNav) {
+                toggleBtn.addEventListener('click', () => {
+                    adminNav.classList.toggle('hidden');
+                });
+            }
+        });
+    </script>
+
+    <th:block layout:fragment="scripts"></th:block>
+
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{client/layouts/layout}">
+<head>
+    <title th:text="${project.title + ' | Nguyễn Quốc Trí (Ternal)'}">Chi Tiết Dự Án | Nguyễn Quốc Trí (Ternal)</title>
+</head>
+<body>
+
+    <div layout:fragment="content" th:data-page-title="${project.title + ' | Nguyễn Quốc Trí (Ternal)'}">
+        <main class="flex-grow pt-28 md:pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-12">
+
+            <!-- Top Navigation & Header -->
+            <section class="space-y-6 border-b border-zinc-800 pb-8 reveal-on-scroll">
+
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <a th:href="@{/projects}" href="/projects"
+                        class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:border-zinc-600 text-xs font-mono transition-colors group">
+                        <span class="group-hover:-translate-x-1 transition-transform">←</span>
+                        <span>Quay lại danh sách dự án</span>
+                    </a>
+
+                    <!-- Status Badges -->
+                    <div class="flex items-center gap-2 font-mono text-xs">
+                        <span class="px-2.5 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300"
+                              th:text="'ID: #PROJ-' + (${project.id < 10} ? '0' + ${project.id} : ${project.id})">
+                            ID: #PROJ-01
+                        </span>
+                        <span class="px-2.5 py-1 rounded bg-emerald-950/80 border border-emerald-800 text-emerald-400 flex items-center gap-1.5">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                            <span th:text="${project.status != null ? project.status : 'ACTIVE'}">ACTIVE</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-mono">
+                        <span>// BACKEND ARCHITECTURE SPECIFICATION</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-tight"
+                        th:text="${project.title}">
+                        E-Commerce Microservices & Payment Gateway Platform
+                    </h1>
+                    <p class="text-sm sm:text-base text-zinc-400 leading-relaxed font-sans max-w-3xl"
+                       th:text="${project.shortDescription}">
+                        Mô tả ngắn dự án
+                    </p>
+                </div>
+
+                <!-- Meta Bento Cards -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3">
+
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-3.5 space-y-1">
+                        <span class="font-mono text-[10px] text-zinc-500 uppercase">KIỂU DỰ ÁN</span>
+                        <p class="text-xs font-semibold text-white"
+                           th:text="${project.type == 'PERSONAL' ? 'Dự án Cá nhân' : 'Dự án Nhóm'}">
+                            Dự án Cá nhân
+                        </p>
+                    </div>
+
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-3.5 space-y-1">
+                        <span class="font-mono text-[10px] text-zinc-500 uppercase">VAI TRÒ CỦA TÔI</span>
+                        <p class="text-xs font-semibold text-white truncate"
+                           th:title="${project.role}"
+                           th:text="${project.role}">
+                            Lead Backend Developer
+                        </p>
+                    </div>
+
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-3.5 space-y-1">
+                        <span class="font-mono text-[10px] text-zinc-500 uppercase">THỜI GIAN THỰC HIỆN</span>
+                        <p class="text-xs font-semibold text-white font-mono"
+                           th:text="${project.timeframe != null && !project.timeframe.isEmpty() ? project.timeframe : 'N/A'}">
+                            01/2026 – 04/2026
+                        </p>
+                    </div>
+
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-3.5 flex flex-col justify-between">
+                        <span class="font-mono text-[10px] text-zinc-500 uppercase">MÃ NGUỒN</span>
+                        <a th:if="${project.githubUrl != null && !project.githubUrl.isEmpty()}"
+                           th:href="${project.githubUrl}" target="_blank" rel="noopener noreferrer"
+                           class="text-xs font-mono font-medium text-white hover:underline flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path fill-rule="evenodd" clip-rule="evenodd"
+                                    d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+                            </svg>
+                            <span>GitHub Repo ↗</span>
+                        </a>
+                        <span th:unless="${project.githubUrl != null && !project.githubUrl.isEmpty()}"
+                              class="text-xs font-mono text-zinc-500">
+                            Mã nguồn riêng tư
+                        </span>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <!-- Project Banner -->
+            <section class="reveal-on-scroll">
+                <div class="relative w-full aspect-[1919/969] bg-[#000000] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+                    <img th:src="${project.coverImage != null && !project.coverImage.isEmpty() ? project.coverImage : 'https://images.unsplash.com/photo-1557821552-17105176677c?w=1600'}"
+                         th:alt="${project.title}" class="w-full h-full object-cover">
+                </div>
+            </section>
+
+            <!-- Bento Content & Tech Sidebar -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-8">
+
+                <!-- Left Column (8): Descriptions, Features, Lessons, Challenges & Video -->
+                <section class="md:col-span-8 space-y-10">
+
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-6 sm:p-8 space-y-8 text-sm sm:text-base text-zinc-300 leading-relaxed">
+
+                        <!-- Mô tả chi tiết nếu có -->
+                        <div class="space-y-3" th:if="${project.detailedDescription != null && !project.detailedDescription.isEmpty()}">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="text-emerald-400">//</span> TỔNG QUAN DỰ ÁN
+                            </h3>
+                            <div class="text-xs sm:text-sm text-zinc-300 font-sans whitespace-pre-wrap leading-relaxed"
+                                 th:text="${project.detailedDescription}">
+                            </div>
+                        </div>
+
+                        <!-- 1. Key features -->
+                        <div class="space-y-3" th:if="${project.features != null && !project.features.isEmpty()}">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="text-emerald-400">01.</span> CÁC CHỨC NĂNG CHÍNH
+                            </h3>
+                            <div class="text-xs sm:text-sm text-zinc-300 font-sans whitespace-pre-wrap leading-relaxed"
+                                 th:text="${project.features}">
+                            </div>
+                        </div>
+
+                        <!-- 2. Learned outcomes -->
+                        <div class="space-y-3 pt-6 border-t border-zinc-800" th:if="${project.lessonsLearned != null && !project.lessonsLearned.isEmpty()}">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="text-emerald-400">02.</span> SAU KHI PROJECT NÀY HỌC ĐƯỢC
+                            </h3>
+                            <div class="text-xs sm:text-sm text-zinc-300 font-sans whitespace-pre-wrap leading-relaxed"
+                                 th:text="${project.lessonsLearned}">
+                            </div>
+                        </div>
+
+                        <!-- 3. Challenges & Solutions -->
+                        <div class="space-y-3 pt-6 border-t border-zinc-800" th:if="${project.challenges != null && !project.challenges.isEmpty()}">
+                            <h3 class="text-base font-bold text-white flex items-center gap-2 font-mono">
+                                <span class="text-emerald-400">03.</span> KHÓ KHĂN & CÁCH GIẢI QUYẾT
+                            </h3>
+                            <div class="text-xs sm:text-sm text-zinc-300 font-sans whitespace-pre-wrap leading-relaxed"
+                                 th:text="${project.challenges}">
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Demo Video YouTube -->
+                    <div class="space-y-3" th:if="${project.videoUrl != null && !project.videoUrl.isEmpty()}">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                                <span class="text-zinc-500 font-mono text-xs">// DEMO</span> Video trải nghiệm thực tế
+                            </h3>
+                        </div>
+
+                        <div class="w-full aspect-[1919/1079] bg-[#000000] border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col">
+                            <div class="flex items-center justify-between px-4 py-2.5 bg-[#121214] border-b border-zinc-800 text-xs font-mono text-zinc-500">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2.5 h-2.5 rounded-full bg-red-600"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-green-600"></span>
+                                </div>
+                                <span class="truncate max-w-[250px] sm:max-w-md" th:text="${project.videoUrl}">youtube.com/embed/...</span>
+                                <span>1080p HD</span>
+                            </div>
+
+                            <iframe class="w-full h-full flex-grow" th:src="${project.videoUrl}"
+                                th:title="${project.title}" frameborder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowfullscreen></iframe>
+                        </div>
+                    </div>
+
+                </section>
+
+                <!-- Right Column (4): Technologies (No logos) & GitHub -->
+                <aside class="md:col-span-4 space-y-6">
+
+                    <!-- Danh mục công nghệ (không có logo) -->
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-5 space-y-4">
+                        <h4 class="text-sm font-bold text-white font-mono uppercase tracking-wider border-b border-zinc-800 pb-3">
+                            // CÔNG NGHỆ SỬ DỤNG
+                        </h4>
+
+                        <div class="space-y-2" th:if="${project.allTags != null && !project.allTags.isEmpty()}">
+                            <div th:each="tech : ${project.allTags}"
+                                class="flex items-center p-2.5 rounded-lg bg-zinc-900 border border-zinc-800 text-xs font-mono hover:border-zinc-700 transition-colors">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2.5 flex-shrink-0"></span>
+                                <span class="text-white font-medium" th:text="${tech}">Spring Boot</span>
+                            </div>
+                        </div>
+
+                        <p th:if="${project.allTags == null || project.allTags.isEmpty()}" class="text-xs text-zinc-500 font-mono">
+                            Chưa có thông tin công nghệ.
+                        </p>
+                    </div>
+
+                    <!-- Mã nguồn và tài liệu -->
+                    <div class="bg-[#121214] border border-zinc-800 rounded-xl p-5 space-y-3"
+                         th:if="${project.githubUrl != null && !project.githubUrl.isEmpty()}">
+                        <h4 class="text-xs font-bold text-white font-mono uppercase">MÃ NGUỒN VÀ TÀI LIỆU</h4>
+                        <p class="text-xs text-zinc-400 leading-relaxed">
+                            Xem toàn bộ mã nguồn trên kho lưu trữ GitHub chính thức.
+                        </p>
+                        <a th:href="${project.githubUrl}" target="_blank" rel="noopener noreferrer"
+                            class="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs font-semibold text-black bg-white hover:bg-zinc-200 transition-colors">
+                            <span>Mở GitHub Repository</span>
+                            <span>↗</span>
+                        </a>
+                    </div>
+                </aside>
+
+            </div>
+
+            <!-- Next / Previous Project Navigation -->
+            <section class="border-t border-zinc-800 pt-8 mt-12 grid grid-cols-1 sm:grid-cols-2 gap-4 reveal-on-scroll">
+                <!-- Previous Project -->
+                <div th:if="${prevProject != null}">
+                    <a th:href="@{/projects/detail(id=${prevProject.id})}"
+                       class="group p-4 rounded-xl bg-[#121214] border border-zinc-800 hover:border-zinc-600 transition-colors flex items-center justify-between">
+                        <div class="space-y-1 min-w-0 pr-3">
+                            <span class="text-[10px] font-mono text-zinc-500 uppercase flex items-center gap-1">
+                                <span>←</span> DỰ ÁN TRƯỚC ĐÓ
+                            </span>
+                            <h4 class="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-400 transition-colors truncate"
+                                th:text="${prevProject.title}">
+                                Dự án trước
+                            </h4>
+                        </div>
+                        <span class="text-zinc-600 group-hover:text-white transition-colors text-lg flex-shrink-0">←</span>
+                    </a>
+                </div>
+                <div th:unless="${prevProject != null}" class="hidden sm:block">
+                    <div class="p-4 rounded-xl bg-zinc-950/40 border border-zinc-900 text-zinc-600 text-xs font-mono flex items-center h-full">
+                        <span>// ĐÃ Ở DỰ ÁN ĐẦU TIÊN</span>
+                    </div>
+                </div>
+
+                <!-- Next Project -->
+                <div th:if="${nextProject != null}">
+                    <a th:href="@{/projects/detail(id=${nextProject.id})}"
+                       class="group p-4 rounded-xl bg-[#121214] border border-zinc-800 hover:border-zinc-600 transition-colors flex items-center justify-between text-right">
+                        <span class="text-zinc-600 group-hover:text-white transition-colors text-lg flex-shrink-0">→</span>
+                        <div class="space-y-1 min-w-0 pl-3">
+                            <span class="text-[10px] font-mono text-zinc-500 uppercase flex items-center justify-end gap-1">
+                                DỰ ÁN TIẾP THEO <span>→</span>
+                            </span>
+                            <h4 class="text-xs sm:text-sm font-bold text-white group-hover:text-emerald-400 transition-colors truncate"
+                                th:text="${nextProject.title}">
+                                Dự án tiếp theo
+                            </h4>
+                        </div>
+                    </a>
+                </div>
+                <div th:unless="${nextProject != null}" class="hidden sm:block">
+                    <div class="p-4 rounded-xl bg-zinc-950/40 border border-zinc-900 text-zinc-600 text-xs font-mono flex items-center justify-end h-full">
+                        <span>// ĐÃ Ở DỰ ÁN CUỐI CÙNG</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+</body>
+</html>
