@@ -343,9 +343,9 @@
                                     LINK VIDEO DEMO YOUTUBE
                                 </label>
                                 <input type="text" id="project-video" name="videoUrl"
-                                    placeholder="vd: https://www.youtube.com/watch?v=... hoặc https://youtu.be/..."
+                                    placeholder="vd: https://www.youtube.com/watch?v=... hoặc nhập 0 để ẩn video"
                                     class="w-full px-3.5 py-2.5 rounded-lg bg-[#09090B] border border-zinc-800 text-zinc-100 placeholder-zinc-500 font-mono focus:outline-none focus:border-white transition-colors">
-                                <p class="text-[11px] text-zinc-500 font-mono">Hệ thống tự động chuẩn hóa mọi link YouTube thành định dạng nhúng Embed để xem trực tiếp.</p>
+                                <p class="text-[11px] text-zinc-500 font-mono">Hệ thống tự động chuẩn hóa link YouTube thành định dạng Embed. Nhập 0 (hoặc để trống) để ẩn thẻ video demo khi xem chi tiết.</p>
                             </div>
 
                             <div class="space-y-1 sm:col-span-2">
@@ -664,7 +664,7 @@
                 viewTime.textContent = data.time || 'N/A';
 
                 // Video iframe
-                if (data.video && data.video.trim() !== '') {
+                if (data.video && data.video.trim() !== '' && data.video.trim() !== '0') {
                     viewVideoIframe.src = data.video;
                     viewVideoWrapper.classList.remove('hidden');
                     viewCoverWrapper.classList.add('hidden');

@@ -144,6 +144,11 @@ public class AdminProjectService {
             return null;
         }
         String clean = rawUrl.trim();
+        // Nhập "0" nghĩa là dự án không có video demo hoặc muốn ẩn video demo
+        if ("0".equals(clean)) {
+            return "0";
+        }
+
         Matcher matcher = YOUTUBE_PATTERN.matcher(clean);
         if (matcher.find()) {
             String videoId = matcher.group(1);
@@ -154,7 +159,7 @@ public class AdminProjectService {
             return "https://www.youtube.com/embed/" + clean;
         }
 
-        throw new IllegalArgumentException("Liên kết YouTube không hợp lệ. Vui lòng nhập đúng URL video YouTube.");
+        throw new IllegalArgumentException("Liên kết YouTube không hợp lệ. Vui lòng nhập đúng URL video YouTube hoặc nhập 0 để ẩn video.");
     }
 
     public String normalizeTags(String rawTags) {

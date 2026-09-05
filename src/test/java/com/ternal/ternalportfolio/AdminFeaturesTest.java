@@ -19,6 +19,7 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -146,13 +147,14 @@ public class AdminFeaturesTest {
         Project savedProject = projectRepo.save(project);
         assertNotNull(savedProject.getId(), "Dự án phải được lưu trong CSDL");
 
-        // 2. Cập nhật dự án qua POST /admin/projects/save
+        // 2. Cập nhật dự án qua POST /admin/projects/save (thử nghiệm nhập videoUrl là "0")
         String updatedTitle = projectTitle + " - Đã cập nhật";
         mockMvc.perform(post("/admin/projects/save")
                         .param("id", savedProject.getId().toString())
                         .param("title", updatedTitle)
                         .param("type", "TEAM")
                         .param("role", "Senior Software Engineer")
+                        .param("videoUrl", "0")
                         .param("shortDescription", "Mô tả sau khi cập nhật")
                         .param("tags", "Java, Spring Boot, JUnit")
                         .param("orderIndex", "100")
@@ -166,6 +168,8 @@ public class AdminFeaturesTest {
         assertEquals(updatedTitle, updatedProject.getTitle());
         assertEquals("TEAM", updatedProject.getType());
         assertEquals("Senior Software Engineer", updatedProject.getRole());
+        assertEquals("0", updatedProject.getVideoUrl(), "videoUrl phải lưu giá trị '0'");
+        assertFalse(updatedProject.hasVideo(), "hasVideo() phải trả về false khi videoUrl = '0'");
 
         // 3. Xóa dự án qua POST /admin/projects/delete/{id}
         mockMvc.perform(post("/admin/projects/delete/" + savedProject.getId()))
@@ -175,6 +179,51 @@ public class AdminFeaturesTest {
 
         // Xác nhận đã xóa khỏi CSDL
         assertTrue(projectRepo.findById(savedProject.getId()).isEmpty(), "Dự án phải được xóa khỏi CSDL");
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("Dự án: Kiểm tra trang chi tiết /projects/detail ẩn thẻ video khi videoUrl = '0'")
+    void testProjectVideoHiddenWhenZeroOnDetailPage() throws Exception {
+        // 1. Dự án có videoUrl = "0"
+        Project zeroVideoProject = new Project();
+        zeroVideoProject.setTitle("Dự án Test Ẩn Video " + System.currentTimeMillis());
+        zeroVideoProject.setType("PERSONAL");
+        zeroVideoProject.setRole("Backend Dev");
+        zeroVideoProject.setVideoUrl("0");
+        zeroVideoProject.setStatus("ACTIVE");
+        zeroVideoProject = projectRepo.save(zeroVideoProject);
+
+        assertFalse(zeroVideoProject.hasVideo(), "hasVideo() phải là false");
+
+        // Gọi trang chi tiết dự án
+        mockMvc.perform(get("/projects/detail").param("id", zeroVideoProject.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("client/project-detail"))
+                .andExpect(content().string(not(containsString("// DEMO"))))
+                .andExpect(content().string(not(containsString("Video trải nghiệm thực tế"))));
+
+        // 2. Dự án có videoUrl hợp lệ
+        Project validVideoProject = new Project();
+        validVideoProject.setTitle("Dự án Test Hiện Video " + System.currentTimeMillis());
+        validVideoProject.setType("PERSONAL");
+        validVideoProject.setRole("Backend Dev");
+        validVideoProject.setVideoUrl("https://www.youtube.com/embed/dQw4w9WgXcQ");
+        validVideoProject.setStatus("ACTIVE");
+        validVideoProject = projectRepo.save(validVideoProject);
+
+        assertTrue(validVideoProject.hasVideo(), "hasVideo() phải là true");
+
+        // Gọi trang chi tiết dự án có video
+        mockMvc.perform(get("/projects/detail").param("id", validVideoProject.getId().toString()))
+                .andExpect(status().isOk())
+                .andExpect(view().name("client/project-detail"))
+                .andExpect(content().string(containsString("// DEMO")))
+                .andExpect(content().string(containsString("https://www.youtube.com/embed/dQw4w9WgXcQ")));
+
+        // Dọn dẹp
+        projectRepo.delete(zeroVideoProject);
+        projectRepo.delete(validVideoProject);
     }
 
     // =========================================================================

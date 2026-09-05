@@ -104,6 +104,16 @@ public class Project {
                 .toList();
     }
 
+    @Transient
+    public boolean hasVideo() {
+        return videoUrl != null && !videoUrl.isBlank() && !"0".equals(videoUrl.trim());
+    }
+
+    @Transient
+    public boolean isHasVideo() {
+        return hasVideo();
+    }
+
     @Override
     public int hashCode() {
         return getClass().hashCode();
